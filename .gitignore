@@ -1,0 +1,35 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# OCR evaluation generated artifacts
+test_artifacts/price_tag_images/
+test_artifacts/ocr_runs/variants/
+test_artifacts/ocr_runs/ocr_cache/
+test_artifacts/ocr_runs/openai_vision_cache/
+test_artifacts/bing_images.html
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

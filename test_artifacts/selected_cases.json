@@ -1,0 +1,66 @@
+[
+  {
+    "id": "candidate_02",
+    "path": "test_artifacts/price_tag_images/candidate_02.jpg",
+    "expectedName": "저탄소인증 성주참외(3~6입)",
+    "expectedPrice": "6,900",
+    "targetRule": "largest central price tag",
+    "source": "https://www.bizhankook.com/bk/article/27383"
+  },
+  {
+    "id": "candidate_03",
+    "path": "test_artifacts/price_tag_images/candidate_03.jpg",
+    "expectedName": "샤인머스켓",
+    "expectedPrice": "19,800",
+    "targetRule": "largest foreground price tag",
+    "source": "https://www.ohmynews.com/NWS_Web/View/at_pg.aspx?CNTN_CD=A0002723219"
+  },
+  {
+    "id": "candidate_05",
+    "path": "test_artifacts/price_tag_images/candidate_05.jpeg",
+    "expectedName": "신라면멀티팩120g*5",
+    "expectedPrice": "2,490",
+    "targetRule": "only visible price tag",
+    "source": "https://www.fmkorea.com/6462201824"
+  },
+  {
+    "id": "candidate_08",
+    "path": "test_artifacts/price_tag_images/candidate_08.jpg",
+    "expectedName": "CJ오리엔탈드레싱260G",
+    "expectedPrice": "2,980",
+    "targetRule": "center price tag",
+    "source": "https://www.epnc.co.kr/news/articleView.html?idxno=76283"
+  },
+  {
+    "id": "candidate_09",
+    "path": "test_artifacts/price_tag_images/candidate_09.jpg",
+    "expectedName": "가장뜨거운 천도복숭아[국산]",
+    "expectedPrice": "3,110",
+    "targetRule": "only visible product label",
+    "source": "https://funnypani.com/1862"
+  },
+  {
+    "id": "candidate_14",
+    "path": "test_artifacts/price_tag_images/candidate_14.png",
+    "expectedName": "CJ 햇반",
+    "expectedPrice": "4,480",
+    "targetRule": "only visible price tag",
+    "source": "https://www.ppomppu.co.kr/zboard/view.php?id=freeboard&no=8865884"
+  },
+  {
+    "id": "candidate_17",
+    "path": "test_artifacts/price_tag_images/candidate_17.jpg",
+    "expectedName": "적신들 체리 세요[국산]",
+    "expectedPrice": "7,950",
+    "targetRule": "only visible product label",
+    "source": "https://funnypani.com/1862"
+  },
+  {
+    "id": "candidate_22",
+    "path": "test_artifacts/price_tag_images/candidate_22.png",
+    "expectedName": "[종가집] 포기김치 10kg+맛김치 1kg",
+    "expectedPrice": "56,800",
+    "targetRule": "central electronic price tag",
+    "source": "https://blog.naver.com/PostView.naver?blogId=taeyangedcom&logNo=223397657592"
+  }
+]
