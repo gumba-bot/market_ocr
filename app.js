@@ -311,31 +311,54 @@ document.addEventListener('DOMContentLoaded', () => {
       .trim();
   }
 
+  const PRICE_PATTERN = /(?:[₩￦]\s*)?([0-9]{1,3}(?:(?:\s*[,.\s]\s*)[0-9]{3})+|[0-9]{3,8})\s*(?:원|won)?/gi;
+  const PRICE_TEXT_PATTERN = /(?:[₩￦]\s*)?[0-9]{1,3}(?:(?:\s*[,.\s]\s*)[0-9]{3})+\s*(?:원|won)?|(?:[₩￦]\s*)?[0-9]{3,8}\s*(?:원|won)|(?:[₩￦]\s*)[0-9]{3,8}|[0-9]{4,8}(?!\s*(?:g|kg|ml|l|개입|입|봉|팩|매|%))/gi;
+  const FINAL_PRICE_WORDS = /(최종|할인|행사|판매|특가|세일|쿠폰|회원|카드|가격|단가|매가)/;
+  const ORIGINAL_PRICE_WORDS = /(정상|기존|소비자|권장|원가|before)/i;
+  const UNIT_WORDS = /(g|kg|ml|l|개입|입|봉|매|팩|100g|용량)/i;
+  const NAME_NOISE_WORDS = /(마트|매장|영수증|합계|결제|바코드|barcode|행사기간|유통기한|제조일|쿠폰|포인트|적립|총액|소계)/i;
+  const PRICE_LABEL_WORDS = /(최종|할인|행사|판매가|판매|특가|세일|쿠폰|회원|카드|가격|단가|정상가|소비자가|원가|매가)/g;
+
+  function normalizePriceValue(raw) {
+    const digits = String(raw || '').replace(/[^0-9]/g, '');
+    if (digits.length < 3 || digits.length > 8) return 0;
+    return parseInt(digits, 10) || 0;
+  }
+
   function extractPriceCandidates(lines) {
-    const pricePattern = /(?:₩|￦|원)?\s*([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]{3,7})\s*(?:원|won)?/gi;
-    const finalWords = /(최종|할인|행사|판매|특가|세일|쿠폰|회원|카드|가격|단가)/;
-    const originalWords = /(정상|기존|소비자|권장|원가|before)/i;
-    const unitWords = /(g|kg|ml|l|개입|입|봉|매|팩|100g|용량)/i;
     const candidates = [];
 
     lines.forEach((line, lineIndex) => {
       let match;
-      while ((match = pricePattern.exec(line)) !== null) {
+      PRICE_PATTERN.lastIndex = 0;
+      while ((match = PRICE_PATTERN.exec(line)) !== null) {
         const raw = match[1];
-        const value = parseInt(raw.replace(/[^0-9]/g, ''), 10);
+        const value = normalizePriceValue(raw);
         if (!value || value < 100 || value > 10000000) continue;
 
         const nextChar = line.slice(match.index + match[0].length, match.index + match[0].length + 1);
         if (nextChar === '%') continue;
 
+        const hasCurrency = /[₩￦원]/.test(match[0]);
+        const hasThousandsMark = /[,.]/.test(raw) || /[0-9]\s+[0-9]{3}/.test(raw);
         let score = lineIndex * 3;
-        if (finalWords.test(line)) score += 100;
-        if (/[₩￦원]/.test(line)) score += 30;
+        if (FINAL_PRICE_WORDS.test(line)) score += 100;
+        if (hasCurrency) score += 35;
+        if (hasThousandsMark) score += 25;
         if (/%/.test(line)) score += 15;
-        if (originalWords.test(line) && !/(최종|할인|행사|특가|세일)/.test(line)) score -= 80;
-        if (unitWords.test(line) && !/[₩￦원]/.test(line)) score -= 30;
+        if (ORIGINAL_PRICE_WORDS.test(line) && !/(최종|할인|행사|특가|세일)/.test(line)) score -= 80;
+        if (UNIT_WORDS.test(line) && !hasCurrency && !hasThousandsMark && !FINAL_PRICE_WORDS.test(line)) score -= 45;
+        if (!hasCurrency && !hasThousandsMark && !FINAL_PRICE_WORDS.test(line) && value < 1000) score -= 20;
 
-        candidates.push({ value, line, lineIndex, score });
+        candidates.push({
+          value,
+          raw,
+          line,
+          lineIndex,
+          matchStart: match.index,
+          matchEnd: match.index + match[0].length,
+          score,
+        });
       }
     });
 
@@ -344,30 +367,67 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function stripPriceText(line) {
     return line
-      .replace(/(?:₩|￦|원)?\s*[0-9]{1,3}(?:[,.\s][0-9]{3})+\s*(?:원|won)?/gi, ' ')
-      .replace(/(?:₩|￦|원)?\s*[0-9]{3,7}\s*(?:원|won)?/gi, ' ')
+      .replace(PRICE_TEXT_PATTERN, ' ')
       .replace(/[0-9]+(?:\.[0-9]+)?\s*%/g, ' ')
-      .replace(/(최종|할인|행사|판매가|특가|세일|쿠폰|회원|카드|가격|단가|정상가|소비자가|원가)/g, ' ')
+      .replace(PRICE_LABEL_WORDS, ' ')
+      .replace(/[^\w가-힣\s+./-]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim();
   }
 
-  function guessProductName(lines, priceLineIndex) {
-    const usable = lines
-      .map((line, index) => ({ index, text: stripPriceText(line) }))
-      .filter(({ text }) => {
-        if (text.length < 2 || text.length > 45) return false;
-        if (!/[가-힣A-Za-z]/.test(text)) return false;
-        if (/^[0-9\s.,/-]+$/.test(text)) return false;
-        if (/(마트|매장|영수증|합계|결제|바코드|barcode|행사기간)/i.test(text)) return false;
-        return true;
-      });
+  function isUsableName(text) {
+    if (text.length < 2 || text.length > 55) return false;
+    if (!/[가-힣A-Za-z]/.test(text)) return false;
+    if (/^[0-9\s.,/+%-]+$/.test(text)) return false;
+    if (/^[0-9\s.]+(?:g|kg|ml|l|개입|입|봉|팩|매)$/i.test(text)) return false;
+    if (NAME_NOISE_WORDS.test(text)) return false;
+    return true;
+  }
 
-    const beforePrice = usable
-      .filter(({ index }) => index <= priceLineIndex)
-      .sort((a, b) => b.index - a.index);
+  function scoreNameCandidate(candidate, priceLineIndex) {
+    const { index, text, original } = candidate;
+    if (!isUsableName(text)) return null;
 
-    return (beforePrice[0] || usable[0] || { text: '' }).text;
+    const distance = Math.abs(index - priceLineIndex);
+    const digits = (text.match(/[0-9]/g) || []).length;
+    const letters = (text.match(/[가-힣A-Za-z]/g) || []).length;
+    let score = Math.max(0, 70 - (distance * 18));
+
+    if (index === priceLineIndex) score += 35;
+    if (index < priceLineIndex) score += 25;
+    if (/[가-힣]/.test(text)) score += 25;
+    if (/[A-Za-z]/.test(text)) score += 8;
+    if (/[0-9]+(?:g|kg|ml|l|개입|입|봉|팩)/i.test(text)) score += 8;
+    if (text.length >= 4 && text.length <= 28) score += 12;
+    if (digits > letters) score -= 25;
+    if (PRICE_LABEL_WORDS.test(original)) score -= 15;
+    PRICE_LABEL_WORDS.lastIndex = 0;
+
+    return { ...candidate, score };
+  }
+
+  function guessProductName(lines, selectedPrice) {
+    const priceLineIndex = selectedPrice ? selectedPrice.lineIndex : 0;
+    const minIndex = Math.max(0, priceLineIndex - 4);
+    const maxIndex = Math.min(lines.length - 1, priceLineIndex + 1);
+    const candidates = [];
+
+    for (let index = minIndex; index <= maxIndex; index += 1) {
+      const original = lines[index];
+      candidates.push({ index, original, text: stripPriceText(original) });
+
+      if (selectedPrice && index === priceLineIndex) {
+        const sameLineWithoutPrice = `${original.slice(0, selectedPrice.matchStart)} ${original.slice(selectedPrice.matchEnd)}`;
+        candidates.push({ index, original, text: stripPriceText(sameLineWithoutPrice) });
+      }
+    }
+
+    const scored = candidates
+      .map(candidate => scoreNameCandidate(candidate, priceLineIndex))
+      .filter(Boolean)
+      .sort((a, b) => b.score - a.score || b.index - a.index);
+
+    return (scored[0] || { text: '' }).text;
   }
 
   function parsePriceTag(text) {
@@ -378,12 +438,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const candidates = extractPriceCandidates(lines);
 
     if (candidates.length === 0) {
-      return { name: guessProductName(lines, 0), price: '', rawText: text };
+      return { name: guessProductName(lines, null), price: '', rawText: text };
     }
 
     const selected = candidates[0];
     return {
-      name: guessProductName(lines, selected.lineIndex),
+      name: guessProductName(lines, selected),
       price: formatNumber(String(selected.value)),
       rawText: text,
     };
