@@ -7,7 +7,10 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "eval:tesseract": "node scripts/run_ocr_regression.mjs",
+    "eval:openai": "node scripts/run_openai_vision_eval.mjs",
+    "eval:paddleocr": "python scripts/run_paddleocr_raw.py && node scripts/evaluate_paddleocr.mjs"
   },
   "dependencies": {
     "react": "^19.2.5",
@@ -22,6 +25,8 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
+    "sharp": "^0.33.5",
+    "tesseract.js": "^5.1.1",
     "vite": "^8.0.10"
   }
 }

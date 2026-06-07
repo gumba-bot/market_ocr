@@ -28,6 +28,7 @@
           <div class="scan-copy">
             <div class="scan-status">가격표를 읽는 중입니다.</div>
             <div class="scan-result" hidden></div>
+            <button class="area-select-btn" type="button" hidden>영역 지정</button>
           </div>
         </div>
 
@@ -45,6 +46,30 @@
 
       <div class="table-container">
         <div class="items-list"></div>
+      </div>
+
+      <div class="region-modal" hidden>
+        <div class="region-dialog" role="dialog" aria-modal="true" aria-label="OCR 영역 지정">
+          <div class="region-header">
+            <strong>영역 지정 OCR</strong>
+            <button class="region-close-btn" type="button" aria-label="닫기">×</button>
+          </div>
+          <div class="region-toolbar">
+            <button class="region-mode-btn active" type="button" data-mode="name">상품명</button>
+            <button class="region-mode-btn" type="button" data-mode="price">가격</button>
+          </div>
+          <div class="region-help">상품명 영역과 최종가격 영역을 각각 드래그하세요.</div>
+          <div class="region-image-wrap">
+            <img class="region-image" alt="영역을 지정할 가격표" />
+            <div class="region-box name-region-box" hidden>상품명</div>
+            <div class="region-box price-region-box" hidden>가격</div>
+            <div class="region-box draft-region-box" hidden></div>
+          </div>
+          <div class="region-actions">
+            <button class="region-run-btn" type="button">선택 영역 OCR</button>
+            <button class="region-reset-btn" type="button">다시 지정</button>
+          </div>
+        </div>
       </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>

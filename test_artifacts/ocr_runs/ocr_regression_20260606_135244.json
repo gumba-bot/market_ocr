@@ -1,0 +1,812 @@
+{
+  "summary": {
+    "startedAt": "2026-06-06T13:52:44.229Z",
+    "finishedAt": "2026-06-06T13:52:44.788Z",
+    "caseCount": 8,
+    "averageNameScore": 0.159,
+    "averagePriceScore": 0.25,
+    "averageCombinedScore": 0.205
+  },
+  "results": [
+    {
+      "id": "candidate_02",
+      "path": "test_artifacts/price_tag_images/candidate_02.jpg",
+      "expectedName": "저탄소인증 성주참외(3~6입)",
+      "expectedPrice": "6,900",
+      "targetRule": "largest central price tag",
+      "source": "https://www.bizhankook.com/bk/article/27383",
+      "actualName": "Jr Rois 아아 하고 oe",
+      "actualPrice": "6,900",
+      "selectedVariant": "full",
+      "selectionHeuristicScore": 263,
+      "parserMethod": "coordinates",
+      "parserConfidence": 80,
+      "nameScore": 0,
+      "priceScore": 1,
+      "combinedScore": 0.5,
+      "rawText": "매        기         ;               CC VAlooe lo 자가 220 EE 래                    J 2      '\nEP 이시                   ㅋㅋ\n|                                    a 이언   A\nSEE | omen mA Nig!          0:                       RE UTE\n6 수  gus TRE                  1074      [    {     ,\n— zp aE] Lye.\n~       =! RF mE\non a SE                               .          가격파격  J]\n=                             1  ,\n-   농협(8(카드 제외)카드로 구매시        >\n:           국내산\nESH MEAT     100% 1.150원                       boas sata Em      wn\nLE     ’                           \"ee    ”        ne Q\n00 of)     (기                                               #4 goo      1 =\n(조토                                                  »          ry               ;\n93                            Rois, oe\n[Jr                              아아 하고     :    ,  <4 1\nRe         6   900    Soy    Li»      Sp   -\n간노 yt       b          t—— 7 \"a — > T=\n,      rw   7771         ×훼시카트로 LRT 시 할인            | ~ ㅡㅡㄷㄷ\n™-» NTH 기   |        SUNNY 0000001 « 20040004 M4           ---    이. ~  2\na                       CA ~ ~\nCe BY    —                  = —   —_—   ~\n~   * “>                  /       ”          -\n“UN      ’            ~ “+                 [에      ’\n6     pe ——    =       ——    -     \"    -     LE.\n ps     (227  A’     — re ~ >  즈 = - we. 7 fre    ~ ~        |\n+ “”『 -~     i              0     ap      \\   al       :   a\nil    취   4  ^    '    \"      A       » the       Ll  Pr . “~      /\n=     『     ALC\now  [소울 Ca  aa 분  | 해 a!        — ,\n^       “YT 를 그    al, 다드 은\n",
+      "variants": [
+        {
+          "variant": "full",
+          "actualName": "Jr Rois 아아 하고 oe",
+          "actualPrice": "6,900",
+          "method": "coordinates",
+          "confidence": 80,
+          "heuristicScore": 263
+        },
+        {
+          "variant": "top_band",
+          "actualName": "N oe 1 4 EN fe",
+          "actualPrice": "6,900",
+          "method": "coordinates",
+          "confidence": 81,
+          "heuristicScore": 204
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "ESH MEAT BARN AMIE 111 Ll",
+          "actualPrice": "1,150",
+          "method": "coordinates",
+          "confidence": 72,
+          "heuristicScore": 150
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "ERANLER 컨 액 aN 시 힐 인 - 수 기",
+          "actualPrice": "11,008",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 137
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "SH MEAT NW DINE 1 삐 14 ert",
+          "actualPrice": "1,150",
+          "method": "coordinates",
+          "confidence": 70,
+          "heuristicScore": 103
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "3 BAKE 확 인 07 세 요 / ig",
+          "actualPrice": "48,151",
+          "method": "coordinates",
+          "confidence": 73,
+          "heuristicScore": 76
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "6 Sr T Te L a 4",
+          "actualPrice": "1,818",
+          "method": "coordinates",
+          "confidence": 69,
+          "heuristicScore": 57
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "이 890",
+          "actualPrice": "890",
+          "method": "coordinates",
+          "confidence": 66,
+          "heuristicScore": -66
+        },
+        {
+          "variant": "left_center",
+          "actualName": "CN 세",
+          "actualPrice": "449",
+          "method": "coordinates",
+          "confidence": 67,
+          "heuristicScore": -70
+        },
+        {
+          "variant": "right_center",
+          "actualName": "14 n 3",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -70
+        }
+      ]
+    },
+    {
+      "id": "candidate_03",
+      "path": "test_artifacts/price_tag_images/candidate_03.jpg",
+      "expectedName": "샤인머스켓",
+      "expectedPrice": "19,800",
+      "targetRule": "largest foreground price tag",
+      "source": "https://www.ohmynews.com/NWS_Web/View/at_pg.aspx?CNTN_CD=A0002723219",
+      "actualName": "NZ 를 wy 0 EOE 배트. 4 노 a",
+      "actualPrice": "1,800",
+      "selectedVariant": "center_tag",
+      "selectionHeuristicScore": 216,
+      "parserMethod": "coordinates",
+      "parserConfidence": 78,
+      "nameScore": 0,
+      "priceScore": 0,
+      "combinedScore": 0,
+      "rawText": "—       :          [=    “  |      AY         A 0 000    3\nge   a ARE    yn        -\nrunny         7 MMe ——       5\n\nkc   5                 =   _ Aa          Fi\n : 50088. a   Pot 1127, TH\noe TC        alk                                         -\nLEE       #55        A  J      ~                                      5\ncg ea  +    Tat rd           We ㅣ a      “A,\n¢ Ete br       .    7. a                     더      독           1 Ye\netl EOE    =\n= NZ 를 .  wy  0 배트.        4     1.800         노 a\nram <A 고 NEE                             {\nRY 를   N      wy                     에레               -\nㆍ 그            ET    9                  A\nFEN .      ba.      S    15   7      :           `            ~          Be    ot                                                                                   -\n/  pS ;   #7 , 2 i                    oq Lhe 4).           .                  oO              =\n,  { #7 ¢ W 2  i!   ~                   =   -                              고 에            =\n    Np 줄로   나르                   -   삭인머스?             —\n.    a                 CUA. .                ;\n",
+      "variants": [
+        {
+          "variant": "center_tag",
+          "actualName": "NZ 를 wy 0 EOE 배트. 4 노 a",
+          "actualPrice": "1,800",
+          "method": "coordinates",
+          "confidence": 78,
+          "heuristicScore": 216
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "eset 을",
+          "actualPrice": "21,800",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 199
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "광 - . J FY",
+          "actualPrice": "21,500",
+          "method": "coordinates",
+          "confidence": 71,
+          "heuristicScore": 179
+        },
+        {
+          "variant": "right_center",
+          "actualName": "/ Lg EX 0. NE",
+          "actualPrice": "2,180",
+          "method": "coordinates",
+          "confidence": 77,
+          "heuristicScore": 170
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "ATH ad 6 JOE Lr a 스 . 1 8",
+          "actualPrice": "21,500",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 152
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "Ca Ag TAMAR 엘 ea . E 3 Kk. SF EX JIS",
+          "actualPrice": "21,500",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 104
+        },
+        {
+          "variant": "left_center",
+          "actualName": "Z . . 시 26 6 PE 5 할",
+          "actualPrice": "67,642",
+          "method": "coordinates",
+          "confidence": 65,
+          "heuristicScore": 53
+        },
+        {
+          "variant": "top_band",
+          "actualName": "ET 고노 에피 테미 21 E 500 SRLS",
+          "actualPrice": "500",
+          "method": "coordinates",
+          "confidence": 65,
+          "heuristicScore": 3
+        },
+        {
+          "variant": "full",
+          "actualName": "7 meni 바트 5",
+          "actualPrice": "252",
+          "method": "coordinates",
+          "confidence": 66,
+          "heuristicScore": -11
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "르기 J 09 i an 3 사 3 워 GS",
+          "actualPrice": "520",
+          "method": "coordinates",
+          "confidence": 68,
+          "heuristicScore": -54
+        }
+      ]
+    },
+    {
+      "id": "candidate_05",
+      "path": "test_artifacts/price_tag_images/candidate_05.jpeg",
+      "expectedName": "신라면멀티팩120g*5",
+      "expectedPrice": "2,490",
+      "targetRule": "only visible price tag",
+      "source": "https://www.fmkorea.com/6462201824",
+      "actualName": "J 을 고 os ESN",
+      "actualPrice": "1,090",
+      "selectedVariant": "left_center",
+      "selectionHeuristicScore": 242,
+      "parserMethod": "coordinates",
+      "parserConfidence": 74,
+      "nameScore": 0,
+      "priceScore": 0,
+      "combinedScore": 0,
+      "rawText": "]         -)\n|\n>        @                    EAL\n:        -\n3       Pp\n도 ~ 개\na\n— -\n-\na=\n~  ah\n.젤    ;\n를 나.   : .@4 1 2\nFRA in\n EET\nA    A 9반 홍도:\nof     RAR  »   Po a 2 amin BNET   는\nod 65   -』.     세노     = 7 \\.\nJ    } 1090 을     < 고 os ESN\nlI Tar NY     AE A RE FP   모수\nme al 6. N=  —        3\n———   gas =F) tated  ~~ 해    7\nBER 42606 200\n:   4,   NS AMT            Noi   Te Ca   i\nET aS   4   ay   SR By\n",
+      "variants": [
+        {
+          "variant": "left_center",
+          "actualName": "J 을 고 os ESN",
+          "actualPrice": "1,090",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 242
+        },
+        {
+          "variant": "right_center",
+          "actualName": "/1 개",
+          "actualPrice": "2,490",
+          "method": "coordinates",
+          "confidence": 81,
+          "heuristicScore": 214
+        },
+        {
+          "variant": "full",
+          "actualName": "oF hz 로 개 de 07 mE A 03 i GE a N Faas 8",
+          "actualPrice": "5,210",
+          "method": "coordinates",
+          "confidence": 79,
+          "heuristicScore": 137
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "i ye 로 Ros BY NC",
+          "actualPrice": "1,786",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 62
+        },
+        {
+          "variant": "top_band",
+          "actualName": "CN 신 라 면 멀 티 팩 5 ps",
+          "actualPrice": "658",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 13
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "신 라 면 멀 티 팩 5",
+          "actualPrice": "658",
+          "method": "coordinates",
+          "confidence": 73,
+          "heuristicScore": 11
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "589 5 개그 수안 울 리 페 0 배트. oN 3",
+          "actualPrice": "589",
+          "method": "coordinates",
+          "confidence": 70,
+          "heuristicScore": 8
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "- Gaia",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -50
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -55
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -55
+        }
+      ]
+    },
+    {
+      "id": "candidate_08",
+      "path": "test_artifacts/price_tag_images/candidate_08.jpg",
+      "expectedName": "CJ오리엔탈드레싱260G",
+      "expectedPrice": "2,980",
+      "targetRule": "center price tag",
+      "source": "https://www.epnc.co.kr/news/articleView.html?idxno=76283",
+      "actualName": "- 239 탈 5 리 의 페 안",
+      "actualPrice": "9,200",
+      "selectedVariant": "right_center",
+      "selectionHeuristicScore": 226,
+      "parserMethod": "coordinates",
+      "parserConfidence": 73,
+      "nameScore": 0.077,
+      "priceScore": 0,
+      "combinedScore": 0.038,
+      "rawText": "- (239탈5리9200의 | = 페안69558009\n= 00GSH) 262%     — 100GF 14618\n-    ssa] | =\n 쿼 . | =  a0\n= . 65월07밀~-03920일    ~\n|   ——     & 0       a [\n— 755\n. ar\n",
+      "variants": [
+        {
+          "variant": "right_center",
+          "actualName": "- 239 탈 5 리 의 페 안",
+          "actualPrice": "9,200",
+          "method": "coordinates",
+          "confidence": 73,
+          "heuristicScore": 226
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "내 - -",
+          "actualPrice": "3,580",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 194
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "당 di",
+          "actualPrice": "3,580",
+          "method": "coordinates",
+          "confidence": 78,
+          "heuristicScore": 186
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "aa TA ISR ATi CloemEsHeE EY TEA",
+          "actualPrice": "3,580",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 184
+        },
+        {
+          "variant": "top_band",
+          "actualName": "2 4 IH",
+          "actualPrice": "3,580",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 182
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "JERE A405 C122 NE EB",
+          "actualPrice": "2,980",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 182
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "E EER",
+          "actualPrice": "3,580",
+          "method": "coordinates",
+          "confidence": 71,
+          "heuristicScore": 179
+        },
+        {
+          "variant": "full",
+          "actualName": "빼 EEE - Cleese 페 앤",
+          "actualPrice": "1,432",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 123
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "당 -. 당",
+          "actualPrice": "1,262",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 108
+        },
+        {
+          "variant": "left_center",
+          "actualName": "1 . RE",
+          "actualPrice": "432",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": -63
+        }
+      ]
+    },
+    {
+      "id": "candidate_09",
+      "path": "test_artifacts/price_tag_images/candidate_09.jpg",
+      "expectedName": "가장뜨거운 천도복숭아[국산]",
+      "expectedPrice": "3,110",
+      "targetRule": "only visible product label",
+      "source": "https://funnypani.com/1862",
+      "actualName": "22 Rs 년 월 일 당 원",
+      "actualPrice": "1,008",
+      "selectedVariant": "center_narrow",
+      "selectionHeuristicScore": 138,
+      "parserMethod": "coordinates",
+      "parserConfidence": 75,
+      "nameScore": 0,
+      "priceScore": 0,
+      "combinedScore": 0,
+      "rawText": "“\"   aN        일 F\n해      »            Lg\nPo     - a 7\n=           -     al\ni      g\n.            8).\nSAE EFSF\n22 [Rs 년,월,일  1008당(원)\n540\n삐 주\n7407031103          R\nEO “2 업하 [| cs\n",
+      "variants": [
+        {
+          "variant": "center_narrow",
+          "actualName": "22 Rs 년 월 일 당 원",
+          "actualPrice": "1,008",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 138
+        },
+        {
+          "variant": "left_center",
+          "actualName": "결 포 c 자 LEE 너 9 e 6 9 g",
+          "actualPrice": "88,151",
+          "method": "coordinates",
+          "confidence": 59,
+          "heuristicScore": 62
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "- on 발이 케 글",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": 10
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "AES30 국산",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": 10
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "포장 년 월 일 유 료 SU",
+          "actualPrice": "506",
+          "method": "coordinates",
+          "confidence": 70,
+          "heuristicScore": 8
+        },
+        {
+          "variant": "top_band",
+          "actualName": "M 포장 년월일 os 년 월 일 당 원 중 Ze 1",
+          "actualPrice": "540,576",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": -6
+        },
+        {
+          "variant": "full",
+          "actualName": "nim 2",
+          "actualPrice": "940,031",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": -48
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "a Tee . oo CH",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -50
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "To Ls NERY",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -50
+        },
+        {
+          "variant": "right_center",
+          "actualName": ". R //",
+          "actualPrice": "103",
+          "method": "coordinates",
+          "confidence": 73,
+          "heuristicScore": -79
+        }
+      ]
+    },
+    {
+      "id": "candidate_14",
+      "path": "test_artifacts/price_tag_images/candidate_14.png",
+      "expectedName": "CJ 햇반",
+      "expectedPrice": "4,480",
+      "targetRule": "only visible price tag",
+      "source": "https://www.ppomppu.co.kr/zboard/view.php?id=freeboard&no=8865884",
+      "actualName": "델리",
+      "actualPrice": "2,480",
+      "selectedVariant": "right_center",
+      "selectionHeuristicScore": 245,
+      "parserMethod": "coordinates",
+      "parserConfidence": 77,
+      "nameScore": 0,
+      "priceScore": 0,
+      "combinedScore": 0,
+      "rawText": "      7\n2 [= /         /\n\n2, 480.\n\n델리\n",
+      "variants": [
+        {
+          "variant": "right_center",
+          "actualName": "델리",
+          "actualPrice": "2,480",
+          "method": "coordinates",
+          "confidence": 77,
+          "heuristicScore": 245
+        },
+        {
+          "variant": "full",
+          "actualName": "ACJ .",
+          "actualPrice": "4,480",
+          "method": "coordinates",
+          "confidence": 77,
+          "heuristicScore": 185
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "",
+          "actualPrice": "4,480",
+          "method": "coordinates",
+          "confidence": 57,
+          "heuristicScore": 160
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "",
+          "actualPrice": "4,480",
+          "method": "coordinates",
+          "confidence": 57,
+          "heuristicScore": 160
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "으 7 /",
+          "actualPrice": "10,171",
+          "method": "coordinates",
+          "confidence": 63,
+          "heuristicScore": 76
+        },
+        {
+          "variant": "top_band",
+          "actualName": "A CJS er",
+          "actualPrice": "1,006",
+          "method": "coordinates",
+          "confidence": 65,
+          "heuristicScore": 53
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "ae A GUE Be",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -50
+        },
+        {
+          "variant": "left_center",
+          "actualName": "ee 를.",
+          "actualPrice": "641",
+          "method": "coordinates",
+          "confidence": 67,
+          "heuristicScore": -70
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "200g 4 4g 4g 0 pe",
+          "actualPrice": "200",
+          "method": "coordinates",
+          "confidence": 66,
+          "heuristicScore": -91
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "200g 4 4g 480",
+          "actualPrice": "480",
+          "method": "coordinates",
+          "confidence": 64,
+          "heuristicScore": -93
+        }
+      ]
+    },
+    {
+      "id": "candidate_17",
+      "path": "test_artifacts/price_tag_images/candidate_17.jpg",
+      "expectedName": "적신들 체리 세요[국산]",
+      "expectedPrice": "7,950",
+      "targetRule": "only visible product label",
+      "source": "https://funnypani.com/1862",
+      "actualName": "시들 체리 세 묘 국산",
+      "actualPrice": "2,050",
+      "selectedVariant": "right_center",
+      "selectionHeuristicScore": 211,
+      "parserMethod": "coordinates",
+      "parserConfidence": 58,
+      "nameScore": 0.667,
+      "priceScore": 0,
+      "combinedScore": 0.333,
+      "rawText": "시들 체리 세묘[국산]\n        2050 >\nIW 수유\n",
+      "variants": [
+        {
+          "variant": "right_center",
+          "actualName": "시들 체리 세 묘 국산",
+          "actualPrice": "2,050",
+          "method": "coordinates",
+          "confidence": 58,
+          "heuristicScore": 211
+        },
+        {
+          "variant": "center_tag",
+          "actualName": "저 신들 All 2 MIS 12",
+          "actualPrice": "2,050",
+          "method": "coordinates",
+          "confidence": 56,
+          "heuristicScore": 194
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "정신들 체리 AH",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": 25
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "그래 _",
+          "actualPrice": "990",
+          "method": "coordinates",
+          "confidence": 66,
+          "heuristicScore": -11
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "개 를 700",
+          "actualPrice": "700",
+          "method": "coordinates",
+          "confidence": 67,
+          "heuristicScore": -30
+        },
+        {
+          "variant": "left_center",
+          "actualName": "SEEN 웰 509",
+          "actualPrice": "850,079",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": -47
+        },
+        {
+          "variant": "full",
+          "actualName": "6 Na Y Ey 6",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": -50
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "a ye",
+          "actualPrice": "3,041,362",
+          "method": "coordinates",
+          "confidence": 70,
+          "heuristicScore": -52
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "후 308",
+          "actualPrice": "308",
+          "method": "coordinates",
+          "confidence": 66,
+          "heuristicScore": -66
+        },
+        {
+          "variant": "top_band",
+          "actualName": "Nn sr 900",
+          "actualPrice": "900",
+          "method": "coordinates",
+          "confidence": 68,
+          "heuristicScore": -69
+        }
+      ]
+    },
+    {
+      "id": "candidate_22",
+      "path": "test_artifacts/price_tag_images/candidate_22.png",
+      "expectedName": "[종가집] 포기김치 10kg+맛김치 1kg",
+      "expectedPrice": "56,800",
+      "targetRule": "central electronic price tag",
+      "source": "https://blog.naver.com/PostView.naver?blogId=taeyangedcom&logNo=223397657592",
+      "actualName": "포 기 김치 101 + 맛 김치 19 증정",
+      "actualPrice": "56,800",
+      "selectedVariant": "center_tag",
+      "selectionHeuristicScore": 274,
+      "parserMethod": "coordinates",
+      "parserConfidence": 76,
+      "nameScore": 0.529,
+      "priceScore": 1,
+      "combinedScore": 0.765,
+      "rawText": "포기김치 101@+맛김치 19 (증정)\nsse00— 56 800\n주문하시려면 _ 88888\n08코드 스캔    Spey\n가격표의 새로운 혁신!\n전자가격표시기를 만나보세요!\n",
+      "variants": [
+        {
+          "variant": "center_tag",
+          "actualName": "포 기 김치 101 + 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 274
+        },
+        {
+          "variant": "right_center",
+          "actualName": "+ 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 76,
+          "heuristicScore": 274
+        },
+        {
+          "variant": "top_band",
+          "actualName": "포 기 김치 10 + 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 273
+        },
+        {
+          "variant": "center_narrow",
+          "actualName": "포 기 김치 10kg+ HEX 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 75,
+          "heuristicScore": 273
+        },
+        {
+          "variant": "full",
+          "actualName": "포 종가집 기 김치 10 + 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 272
+        },
+        {
+          "variant": "middle_tag",
+          "actualName": "포 기 김 치 10 + 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 74,
+          "heuristicScore": 272
+        },
+        {
+          "variant": "lower_label",
+          "actualName": "포 기 김치 + 맛 김치 19 증정",
+          "actualPrice": "56,800",
+          "method": "coordinates",
+          "confidence": 73,
+          "heuristicScore": 271
+        },
+        {
+          "variant": "price_lower_center",
+          "actualName": "J0 6UV",
+          "actualPrice": "85,000",
+          "method": "coordinates",
+          "confidence": 71,
+          "heuristicScore": 194
+        },
+        {
+          "variant": "left_center",
+          "actualName": "종가집",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": 10
+        },
+        {
+          "variant": "price_lower_right",
+          "actualName": "하시려면",
+          "actualPrice": "",
+          "method": "text",
+          "confidence": 20,
+          "heuristicScore": 10
+        }
+      ]
+    }
+  ]
+}
