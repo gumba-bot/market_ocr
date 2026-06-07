@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const regionModal = document.querySelector('.region-modal');
   const regionImage = document.querySelector('.region-image');
   const regionImageWrap = document.querySelector('.region-image-wrap');
+  const regionHelp = document.querySelector('.region-help');
   const regionModeBtns = document.querySelectorAll('.region-mode-btn');
   const regionCloseBtn = document.querySelector('.region-close-btn');
   const regionRunBtn = document.querySelector('.region-run-btn');
@@ -22,19 +23,16 @@ document.addEventListener('DOMContentLoaded', () => {
   const priceRegionBox = document.querySelector('.price-region-box');
   const draftRegionBox = document.querySelector('.draft-region-box');
 
-  const TEMPLATE_STORAGE_KEY = 'market_cal_price_tag_templates';
-  const MAX_TEMPLATES = 12;
-  const pendingScanContexts = new Map();
-
   let items = [];
   let deferredPrompt;
   let currentPreviewUrl = '';
   let currentPhotoFile = null;
   let lastScannedItemId = '';
-  let priceTagTemplates = loadPriceTagTemplates();
   let regionMode = 'name';
   let regionDraftStart = null;
   let regionSelection = { name: null, price: null };
+  const defaultRegionHelpText = regionHelp.textContent;
+  const defaultRegionRunText = regionRunBtn.textContent;
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('./sw.js').catch((err) => {
@@ -84,19 +82,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('market_cal_items', JSON.stringify(items));
   }
 
-  function loadPriceTagTemplates() {
-    try {
-      const parsed = JSON.parse(localStorage.getItem(TEMPLATE_STORAGE_KEY) || '[]');
-      return Array.isArray(parsed) ? parsed.filter(template => template.nameRegion && template.priceRegion) : [];
-    } catch {
-      return [];
-    }
-  }
-
-  function savePriceTagTemplates() {
-    localStorage.setItem(TEMPLATE_STORAGE_KEY, JSON.stringify(priceTagTemplates.slice(0, MAX_TEMPLATES)));
-  }
-
   function escapeAttr(value) {
     return String(value || '')
       .replace(/&/g, '&amp;')
@@ -135,25 +120,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const countNum = parseInt(countVal, 10) || 0;
     const itemTotal = (parseNumber(item.price) || 0) * countNum;
     row.querySelector('.item-total').textContent = itemTotal > 0 ? itemTotal.toLocaleString('ko-KR') : '';
-  }
-
-  function maybeLearnFromCorrection(item) {
-    const context = pendingScanContexts.get(item.id);
-    if (!context || context.learned) return;
-
-    const learned = learnTemplateFromCorrection(context, item);
-    if (!learned) return;
-
-    context.learned = true;
-    priceTagTemplates = [
-      learned,
-      ...priceTagTemplates.filter(template => template.signature !== learned.signature),
-    ].slice(0, MAX_TEMPLATES);
-    savePriceTagTemplates();
-    setScanMessage('수정한 위치를 기억했습니다. 다음 가격표부터 같은 구조를 먼저 적용합니다.', {
-      name: item.name,
-      price: item.price,
-    });
   }
 
   function checkAutoAdd() {
@@ -199,7 +165,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nameInput.addEventListener('input', (e) => {
       item.name = e.target.value;
-      maybeLearnFromCorrection(item);
       saveToLocalStorage();
       updateTotals();
       checkAutoAdd();
@@ -211,7 +176,6 @@ document.addEventListener('DOMContentLoaded', () => {
       const formatted = formatNumber(e.target.value);
       item.price = formatted;
       e.target.value = formatted;
-      maybeLearnFromCorrection(item);
 
       const diff = formatted.length - oldLength;
       const newPos = Math.max(0, cursorPosition + diff);
@@ -298,6 +262,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function hideScanPanel() {
+    scanPanel.hidden = true;
+    scanResult.hidden = true;
+    scanResult.innerHTML = '';
+    scanPreview.hidden = true;
+    areaSelectBtn.hidden = true;
+  }
+
   function showPreview(file) {
     if (currentPreviewUrl) {
       URL.revokeObjectURL(currentPreviewUrl);
@@ -373,26 +345,6 @@ document.addEventListener('DOMContentLoaded', () => {
     return canvas.toDataURL('image/jpeg', 0.92);
   }
 
-  async function prepareImageVariantsForOcr(file) {
-    const source = await loadImageSource(file);
-    const crops = [
-      { id: 'full', x: 0, y: 0, w: 1, h: 1 },
-      { id: 'center', x: 0.12, y: 0.05, w: 0.76, h: 0.78 },
-      { id: 'top', x: 0, y: 0, w: 1, h: 0.72 },
-      { id: 'right', x: 0.38, y: 0.08, w: 0.62, h: 0.82 },
-      { id: 'lower', x: 0.12, y: 0.32, w: 0.76, h: 0.5 },
-    ];
-
-    try {
-      return crops.map(crop => ({
-        id: crop.id,
-        image: paintOcrVariant(source, crop),
-      }));
-    } finally {
-      source.close();
-    }
-  }
-
   async function prepareRegionForOcr(file, region) {
     const source = await loadImageSource(file);
     try {
@@ -422,394 +374,14 @@ document.addEventListener('DOMContentLoaded', () => {
   const UNIT_WORDS = /(g|kg|ml|l|개입|입|봉|매|팩|100g|용량)/i;
   const NAME_NOISE_WORDS = /(마트|매장|영수증|합계|결제|바코드|barcode|행사기간|유통기한|제조일|쿠폰|포인트|적립|총액|소계)/i;
   const PRICE_LABEL_WORDS = /(최종|할인|행사|판매가|판매|특가|세일|쿠폰|회원|카드|가격|단가|정상가|소비자가|원가|매가)/g;
-  const HANGUL_PATTERN = /[가-힣]/;
-
   function clamp(value, min, max) {
     return Math.max(min, Math.min(max, value));
-  }
-
-  function normalizeText(text) {
-    return cleanLine(String(text || '').replace(/[^\w가-힣₩￦원%,.+/\-\s]/g, ' '));
-  }
-
-  function getBbox(source) {
-    const bbox = source && (source.bbox || source.boundingBox || source);
-    if (!bbox) return null;
-
-    const firstFinite = (...values) => values.find(value => Number.isFinite(Number(value)));
-    const x0 = Number(firstFinite(bbox.x0, bbox.left, bbox.x, bbox[0]));
-    const y0 = Number(firstFinite(bbox.y0, bbox.top, bbox.y, bbox[1]));
-    const x1 = Number(firstFinite(
-      bbox.x1,
-      bbox.right,
-      Number.isFinite(Number(bbox.x)) && Number.isFinite(Number(bbox.w)) ? Number(bbox.x) + Number(bbox.w) : undefined,
-      Number.isFinite(Number(bbox.x)) && Number.isFinite(Number(bbox.width)) ? Number(bbox.x) + Number(bbox.width) : undefined,
-      bbox[2],
-    ));
-    const y1 = Number(firstFinite(
-      bbox.y1,
-      bbox.bottom,
-      Number.isFinite(Number(bbox.y)) && Number.isFinite(Number(bbox.h)) ? Number(bbox.y) + Number(bbox.h) : undefined,
-      Number.isFinite(Number(bbox.y)) && Number.isFinite(Number(bbox.height)) ? Number(bbox.y) + Number(bbox.height) : undefined,
-      bbox[3],
-    ));
-
-    if ([x0, y0, x1, y1].some(value => !Number.isFinite(value))) return null;
-    if (x1 <= x0 || y1 <= y0) return null;
-    return { x0, y0, x1, y1 };
-  }
-
-  function unionBbox(items) {
-    const boxes = items.map(item => item.bbox).filter(Boolean);
-    if (boxes.length === 0) return null;
-
-    return {
-      x0: Math.min(...boxes.map(box => box.x0)),
-      y0: Math.min(...boxes.map(box => box.y0)),
-      x1: Math.max(...boxes.map(box => box.x1)),
-      y1: Math.max(...boxes.map(box => box.y1)),
-    };
-  }
-
-  function bboxCenter(box) {
-    return {
-      x: (box.x0 + box.x1) / 2,
-      y: (box.y0 + box.y1) / 2,
-    };
-  }
-
-  function bboxHeight(box) {
-    return box.y1 - box.y0;
-  }
-
-  function bboxToRegion(box, width, height, padding = 0.025) {
-    return {
-      x0: clamp((box.x0 / width) - padding, 0, 1),
-      y0: clamp((box.y0 / height) - padding, 0, 1),
-      x1: clamp((box.x1 / width) + padding, 0, 1),
-      y1: clamp((box.y1 / height) + padding, 0, 1),
-    };
-  }
-
-  function regionToBbox(region, width, height, padding = 0) {
-    return {
-      x0: clamp(region.x0 - padding, 0, 1) * width,
-      y0: clamp(region.y0 - padding, 0, 1) * height,
-      x1: clamp(region.x1 + padding, 0, 1) * width,
-      y1: clamp(region.y1 + padding, 0, 1) * height,
-    };
-  }
-
-  function isCenterInside(box, regionBox) {
-    const center = bboxCenter(box);
-    return center.x >= regionBox.x0 && center.x <= regionBox.x1 && center.y >= regionBox.y0 && center.y <= regionBox.y1;
-  }
-
-  function groupWordsIntoLines(words) {
-    if (words.length === 0) return [];
-
-    const sortedWords = [...words].sort((a, b) => ((a.bbox.y0 + a.bbox.y1) / 2) - ((b.bbox.y0 + b.bbox.y1) / 2));
-    const medianHeight = [...sortedWords]
-      .map(word => bboxHeight(word.bbox))
-      .sort((a, b) => a - b)[Math.floor(sortedWords.length / 2)] || 20;
-    const lineThreshold = Math.max(10, medianHeight * 0.7);
-    const buckets = [];
-
-    sortedWords.forEach((word) => {
-      const cy = bboxCenter(word.bbox).y;
-      const bucket = buckets.find(line => Math.abs(line.cy - cy) <= lineThreshold);
-      if (bucket) {
-        bucket.words.push(word);
-        bucket.cy = ((bucket.cy * (bucket.words.length - 1)) + cy) / bucket.words.length;
-      } else {
-        buckets.push({ cy, words: [word] });
-      }
-    });
-
-    return buckets
-      .map((line, index) => {
-        const lineWords = line.words.sort((a, b) => a.bbox.x0 - b.bbox.x0);
-        const bbox = unionBbox(lineWords);
-        return {
-          index,
-          words: lineWords,
-          text: normalizeText(lineWords.map(word => word.text).join(' ')),
-          bbox,
-          confidence: average(lineWords.map(word => word.confidence).filter(Number.isFinite)),
-        };
-      })
-      .filter(line => line.text && line.bbox)
-      .sort((a, b) => a.bbox.y0 - b.bbox.y0)
-      .map((line, index) => ({ ...line, index }));
-  }
-
-  function average(values) {
-    if (!values.length) return 0;
-    return values.reduce((sum, value) => sum + value, 0) / values.length;
-  }
-
-  function buildOcrLayout(ocrData) {
-    const text = String(ocrData?.text || '');
-    const rawWords = Array.isArray(ocrData?.words) ? ocrData.words : [];
-    const words = rawWords
-      .map((word) => {
-        const bbox = getBbox(word);
-        const wordText = normalizeText(word.text || word.symbol || '');
-        if (!bbox || !wordText) return null;
-        return {
-          text: wordText,
-          bbox,
-          confidence: Number(word.confidence),
-        };
-      })
-      .filter(Boolean);
-
-    const maxX = Math.max(1, Number(ocrData?.width) || 0, ...words.map(word => word.bbox.x1));
-    const maxY = Math.max(1, Number(ocrData?.height) || 0, ...words.map(word => word.bbox.y1));
-    const lines = groupWordsIntoLines(words);
-
-    return {
-      text,
-      words,
-      lines,
-      width: maxX,
-      height: maxY,
-    };
   }
 
   function normalizePriceValue(raw) {
     const digits = String(raw || '').replace(/[^0-9]/g, '');
     if (digits.length < 3 || digits.length > 8) return 0;
     return parseInt(digits, 10) || 0;
-  }
-
-  function compactDigits(text) {
-    return String(text || '').replace(/[^0-9]/g, '');
-  }
-
-  function addPriceCandidate(candidates, candidate) {
-    const duplicate = candidates.find(existing => (
-      existing.value === candidate.value
-      && Math.abs(existing.bbox.y0 - candidate.bbox.y0) < 8
-      && Math.abs(existing.bbox.x0 - candidate.bbox.x0) < 20
-    ));
-
-    if (!duplicate) {
-      candidates.push(candidate);
-    } else if (candidate.score > duplicate.score) {
-      Object.assign(duplicate, candidate);
-    }
-  }
-
-  function scoreCoordinatePriceCandidate({ value, raw, text, bbox, lineIndex, layout, inTemplate = false }) {
-    const hasCurrency = /[₩￦원]/.test(text);
-    const hasThousandsMark = /[,.]/.test(raw) || /[0-9]\s+[0-9]{3}/.test(raw);
-    const center = bboxCenter(bbox);
-    const heightRatio = bboxHeight(bbox) / layout.height;
-    const yRatio = center.y / layout.height;
-    let score = 0;
-
-    score += heightRatio * 180;
-    score += yRatio * 35;
-    score += lineIndex * 2;
-    if (FINAL_PRICE_WORDS.test(text)) score += 110;
-    if (hasCurrency) score += 45;
-    if (hasThousandsMark) score += 25;
-    if (inTemplate) score += 130;
-    if (/%/.test(text)) score -= 35;
-    if (value >= 1900 && value <= 2099 && !hasCurrency && !hasThousandsMark && !FINAL_PRICE_WORDS.test(text)) score -= 130;
-    if (value >= 1000 && value % 10 !== 0 && !hasCurrency && !hasThousandsMark) score -= 85;
-    if (value >= 1000 && value % 100 === 0) score += 25;
-    if (value >= 1000 && /[89]0$/.test(String(value))) score += 18;
-    if (ORIGINAL_PRICE_WORDS.test(text) && !/(최종|할인|행사|특가|세일|판매)/.test(text)) score -= 90;
-    if (/(100\s*g|100g|g당|당\s*[0-9,.]+원|100G)/i.test(text)) score -= 130;
-    if (UNIT_WORDS.test(text) && !hasCurrency && !hasThousandsMark && !FINAL_PRICE_WORDS.test(text)) score -= 55;
-    if (!hasCurrency && !hasThousandsMark && !FINAL_PRICE_WORDS.test(text) && value < 1000) score -= 25;
-    if (value > 1000000 && !hasCurrency && !FINAL_PRICE_WORDS.test(text)) score -= 25;
-
-    return score;
-  }
-
-  function extractCoordinatePriceCandidates(layout, regionBox = null, inTemplate = false) {
-    const candidates = [];
-    const sourceLines = regionBox
-      ? layout.lines.filter(line => isCenterInside(line.bbox, regionBox) || line.words.some(word => isCenterInside(word.bbox, regionBox)))
-      : layout.lines;
-
-    sourceLines.forEach((line) => {
-      const scopedWords = regionBox ? line.words.filter(word => isCenterInside(word.bbox, regionBox)) : line.words;
-      const lineText = normalizeText((scopedWords.length ? scopedWords : line.words).map(word => word.text).join(' '));
-      if (!lineText) return;
-
-      let match;
-      PRICE_PATTERN.lastIndex = 0;
-      while ((match = PRICE_PATTERN.exec(lineText)) !== null) {
-        const raw = match[1];
-        const value = normalizePriceValue(raw);
-        if (!value || value < 100 || value > 10000000) continue;
-
-        const matchText = match[0];
-        const nextChar = lineText.slice(match.index + matchText.length, match.index + matchText.length + 1);
-        if (nextChar === '%') continue;
-
-        const matchDigits = compactDigits(matchText);
-        const matchedWords = (scopedWords.length ? scopedWords : line.words).filter(word => {
-          const digits = compactDigits(word.text);
-          return digits && (matchDigits.includes(digits) || digits.includes(matchDigits));
-        });
-        const bbox = unionBbox(matchedWords.length ? matchedWords : [{ bbox: line.bbox }]) || line.bbox;
-        const score = scoreCoordinatePriceCandidate({
-          value,
-          raw,
-          text: lineText,
-          bbox,
-          lineIndex: line.index,
-          layout,
-          inTemplate,
-        });
-
-        addPriceCandidate(candidates, {
-          value,
-          raw,
-          text: lineText,
-          lineIndex: line.index,
-          bbox,
-          score,
-        });
-      }
-    });
-
-    return candidates.sort((a, b) => b.score - a.score || bboxHeight(b.bbox) - bboxHeight(a.bbox));
-  }
-
-  function extractNameFromRegion(layout, regionBox) {
-    const lineCandidates = layout.lines
-      .map((line) => {
-        const words = line.words.filter(word => isCenterInside(word.bbox, regionBox));
-        if (words.length === 0) return null;
-        const original = words.map(word => word.text).join(' ');
-        const text = stripPriceText(normalizeText(original));
-        if (!isUsableName(text)) return null;
-
-        const letters = (text.match(/[가-힣A-Za-z]/g) || []).length;
-        const hangul = (text.match(/[가-힣]/g) || []).length;
-        const digits = (text.match(/[0-9]/g) || []).length;
-        let score = letters * 3 + hangul * 4 + bboxHeight(line.bbox) / layout.height * 80;
-        if (digits > letters) score -= 40;
-        if (text.length >= 4 && text.length <= 32) score += 20;
-
-        return {
-          text,
-          bbox: unionBbox(words) || line.bbox,
-          score,
-          original,
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.score - a.score);
-
-    return lineCandidates[0] || null;
-  }
-
-  function guessProductNameFromCoordinates(layout, selectedPrice) {
-    if (!selectedPrice) return null;
-
-    const priceCenter = bboxCenter(selectedPrice.bbox);
-    const candidates = layout.lines
-      .map((line) => {
-        const text = stripPriceText(line.text);
-        if (!isUsableName(text)) return null;
-
-        const lineCenter = bboxCenter(line.bbox);
-        const verticalDistance = Math.abs(lineCenter.y - priceCenter.y) / layout.height;
-        const isAbove = lineCenter.y < priceCenter.y;
-        const isSameLine = Math.abs(lineCenter.y - priceCenter.y) < Math.max(12, bboxHeight(selectedPrice.bbox) * 0.6);
-        const xOverlap = Math.max(0, Math.min(line.bbox.x1, selectedPrice.bbox.x1) - Math.max(line.bbox.x0, selectedPrice.bbox.x0));
-        const overlapRatio = xOverlap / Math.max(1, Math.min(line.bbox.x1 - line.bbox.x0, selectedPrice.bbox.x1 - selectedPrice.bbox.x0));
-        const digits = (text.match(/[0-9]/g) || []).length;
-        const letters = (text.match(/[가-힣A-Za-z]/g) || []).length;
-        let score = 80 - (verticalDistance * 260);
-
-        if (isAbove) score += 45;
-        if (isSameLine) score += 25;
-        if (overlapRatio > 0.2) score += 15;
-        if (HANGUL_PATTERN.test(text)) score += 30;
-        if (text.length >= 4 && text.length <= 30) score += 18;
-        if (digits > letters) score -= 35;
-        if (lineCenter.y > priceCenter.y + bboxHeight(selectedPrice.bbox)) score -= 30;
-
-        return {
-          text,
-          bbox: line.bbox,
-          lineIndex: line.index,
-          score,
-        };
-      })
-      .filter(Boolean)
-      .sort((a, b) => b.score - a.score);
-
-    return candidates[0] || null;
-  }
-
-  function getLayoutSignature(layout) {
-    const tokens = layout.words
-      .map(word => word.text)
-      .filter(text => (
-        FINAL_PRICE_WORDS.test(text)
-        || ORIGINAL_PRICE_WORDS.test(text)
-        || UNIT_WORDS.test(text)
-        || /[₩￦원%]/.test(text)
-      ))
-      .slice(0, 8)
-      .join('|');
-
-    return tokens || `${Math.round(layout.width)}x${Math.round(layout.height)}`;
-  }
-
-  function trySavedTemplates(layout) {
-    for (const template of priceTagTemplates) {
-      const nameRegion = regionToBbox(template.nameRegion, layout.width, layout.height, 0.04);
-      const priceRegion = regionToBbox(template.priceRegion, layout.width, layout.height, 0.04);
-      const price = extractCoordinatePriceCandidates(layout, priceRegion, true)[0];
-      const name = extractNameFromRegion(layout, nameRegion);
-
-      if (price && (name || price.score > 150)) {
-        template.hits = (template.hits || 0) + 1;
-        template.updatedAt = Date.now();
-        savePriceTagTemplates();
-        return {
-          name: name ? name.text : '',
-          price: formatNumber(String(price.value)),
-          rawText: layout.text,
-          method: 'template',
-          confidence: Math.round(Math.min(99, 55 + (price.score / 8) + (name ? 15 : 0))),
-          selectedPrice: price,
-          selectedName: name,
-          layout,
-        };
-      }
-    }
-
-    return null;
-  }
-
-  function parseCoordinatePriceTag(layout) {
-    if (layout.words.length === 0 || layout.lines.length === 0) return null;
-
-    const selectedPrice = extractCoordinatePriceCandidates(layout)[0];
-    if (!selectedPrice) return null;
-
-    const selectedName = guessProductNameFromCoordinates(layout, selectedPrice);
-    return {
-      name: selectedName ? selectedName.text : '',
-      price: formatNumber(String(selectedPrice.value)),
-      rawText: layout.text,
-      method: 'coordinates',
-      confidence: Math.round(Math.min(95, 45 + (selectedPrice.score / 10) + (selectedName ? 20 : 0))),
-      selectedPrice,
-      selectedName,
-      layout,
-    };
   }
 
   function extractPriceCandidates(lines) {
@@ -944,53 +516,6 @@ document.addEventListener('DOMContentLoaded', () => {
     };
   }
 
-  function parsePriceTag(ocrData) {
-    const layout = buildOcrLayout(ocrData || {});
-    const templateResult = trySavedTemplates(layout);
-    if (templateResult) return templateResult;
-
-    const coordinateResult = parseCoordinatePriceTag(layout);
-    if (coordinateResult && (coordinateResult.name || coordinateResult.price)) {
-      return coordinateResult;
-    }
-
-    return parseLinePriceTag(layout.text || String(ocrData || ''));
-  }
-
-  function scoreExtractionResult(parsed) {
-    const name = String(parsed.name || '');
-    const priceDigits = compactDigits(parsed.price);
-    const price = Number(priceDigits || 0);
-    const hangulCount = (name.match(/[가-힣]/g) || []).length;
-    const latinCount = (name.match(/[A-Za-z]/g) || []).length;
-    const digitCount = (name.match(/[0-9]/g) || []).length;
-    const tokenCount = name.split(/\s+/).filter(Boolean).length;
-    const symbolNoise = (name.match(/[^0-9A-Za-z가-힣\s]/g) || []).length;
-    let score = Number(parsed.confidence || 0);
-
-    if (priceDigits.length >= 4 && priceDigits.length <= 5) score += 70;
-    if (priceDigits.length === 3) score -= 70;
-    if (priceDigits.length > 5) score -= 15;
-    if (price >= 1000 && price <= 100000) score += 25;
-    if (price > 0 && price < 1000) score -= 50;
-    if (price >= 1000 && price % 10 !== 0) score -= 90;
-    if (price >= 1000 && price % 100 === 0) score += 45;
-    if (price >= 1000 && /[89]0$/.test(priceDigits)) score += 30;
-    if (hangulCount >= 2) score += 35;
-    if (hangulCount >= 5) score += 15;
-    if (latinCount > hangulCount && hangulCount < 2) score -= 25;
-    if (digitCount > hangulCount + latinCount) score -= 20;
-    if (tokenCount >= 8 && hangulCount < 6) score -= 45;
-    if (tokenCount >= 12) score -= 35;
-    if (symbolNoise >= 2) score -= 15;
-    if (name.length > 40) score -= 30;
-    if (parsed.method === 'coordinates') score += 8;
-    if (!name) score -= 30;
-    if (!priceDigits) score -= 45;
-
-    return score;
-  }
-
   function getImageContentRect() {
     const wrapRect = regionImageWrap.getBoundingClientRect();
     const naturalWidth = regionImage.naturalWidth || 1;
@@ -1071,6 +596,8 @@ document.addEventListener('DOMContentLoaded', () => {
     regionSelection = { name: null, price: null };
     regionDraftStart = null;
     draftRegionBox.hidden = true;
+    regionHelp.textContent = defaultRegionHelpText;
+    regionRunBtn.textContent = defaultRegionRunText;
     setRegionMode('name');
     regionImage.src = currentPreviewUrl;
     regionModal.hidden = false;
@@ -1087,6 +614,8 @@ document.addEventListener('DOMContentLoaded', () => {
     regionSelection = { name: null, price: null };
     regionDraftStart = null;
     draftRegionBox.hidden = true;
+    regionHelp.textContent = defaultRegionHelpText;
+    regionRunBtn.textContent = defaultRegionRunText;
     updateRegionBoxes();
     setRegionMode('name');
   }
@@ -1099,29 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
       .filter(isUsableName)
       .sort((a, b) => b.length - a.length);
     return lines[0] || cleanLine(String(text || '').split(/\r?\n/).find(Boolean) || '');
-  }
-
-  function saveManualRegionTemplate() {
-    if (!regionSelection.name || !regionSelection.price) return;
-
-    const signature = 'manual-region';
-    const existing = priceTagTemplates.find(template => template.signature === signature);
-    const template = {
-      id: existing?.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      signature,
-      createdAt: existing?.createdAt || Date.now(),
-      updatedAt: Date.now(),
-      hits: existing?.hits || 0,
-      samples: Math.min((existing?.samples || 0) + 1, 999),
-      nameRegion: regionSelection.name,
-      priceRegion: regionSelection.price,
-    };
-
-    priceTagTemplates = [
-      template,
-      ...priceTagTemplates.filter(item => item.id !== template.id && item.signature !== signature),
-    ].slice(0, MAX_TEMPLATES);
-    savePriceTagTemplates();
   }
 
   async function runSelectedRegionOcr() {
@@ -1137,14 +643,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     regionRunBtn.disabled = true;
     areaSelectBtn.disabled = true;
-    setScanMessage('선택한 영역만 다시 읽는 중입니다.');
+    regionHelp.textContent = 'OCR 준비 중입니다. 0%';
+    regionRunBtn.textContent = 'OCR 0%';
+    setScanMessage('OCR 준비 중입니다. 0%');
 
     try {
       const nameImage = await prepareRegionForOcr(currentPhotoFile, regionSelection.name);
       const priceImage = await prepareRegionForOcr(currentPhotoFile, regionSelection.price);
+      const progressState = { name: 0, price: 0 };
+      const updateProgress = () => {
+        const pct = Math.round((progressState.name + progressState.price) / 2);
+        const message = `OCR 진행 중입니다. ${pct}%`;
+        regionHelp.textContent = message;
+        regionRunBtn.textContent = `OCR ${pct}%`;
+        setScanMessage(message);
+      };
+      const createProgressLogger = key => (progress) => {
+        if (progress.status !== 'recognizing text') return;
+        progressState[key] = Math.max(progressState[key], Math.round((progress.progress || 0) * 100));
+        updateProgress();
+      };
+      updateProgress();
       const [nameOcr, priceOcr] = await Promise.all([
-        window.Tesseract.recognize(nameImage, 'kor+eng'),
-        window.Tesseract.recognize(priceImage, 'kor+eng'),
+        window.Tesseract.recognize(nameImage, 'kor+eng', { logger: createProgressLogger('name') }),
+        window.Tesseract.recognize(priceImage, 'kor+eng', { logger: createProgressLogger('price') }),
       ]);
       const priceParsed = parseLinePriceTag(priceOcr.data.text || '');
       const parsed = {
@@ -1155,71 +677,19 @@ document.addEventListener('DOMContentLoaded', () => {
         confidence: priceParsed.price ? 85 : 55,
       };
 
-      saveManualRegionTemplate();
       addScannedItem(parsed);
       closeRegionModal();
-      setScanMessage('선택한 영역에서 읽은 내용을 입력했습니다.', parsed);
+      hideScanPanel();
     } catch (err) {
       console.error('Manual region OCR failed:', err);
+      regionHelp.textContent = defaultRegionHelpText;
+      regionRunBtn.textContent = defaultRegionRunText;
       setScanMessage('선택한 영역을 읽는 중 오류가 발생했습니다. 다시 지정해 주세요.');
     } finally {
       regionRunBtn.disabled = false;
       areaSelectBtn.disabled = false;
+      regionRunBtn.textContent = defaultRegionRunText;
     }
-  }
-
-  function findNameBoxForCorrection(context, correctedName) {
-    const layout = context.layout;
-    const normalizedCorrection = normalizeText(correctedName).replace(/\s+/g, '');
-    if (!layout || !normalizedCorrection) return null;
-
-    const exactLine = layout.lines
-      .map(line => ({
-        line,
-        compact: stripPriceText(line.text).replace(/\s+/g, ''),
-      }))
-      .filter(({ compact }) => compact && (compact.includes(normalizedCorrection) || normalizedCorrection.includes(compact)))
-      .sort((a, b) => b.compact.length - a.compact.length)[0];
-
-    if (exactLine) return exactLine.line.bbox;
-    return context.selectedName ? context.selectedName.bbox : null;
-  }
-
-  function findPriceBoxForCorrection(context, correctedPrice) {
-    const layout = context.layout;
-    const correctedDigits = compactDigits(correctedPrice);
-    if (!layout || !correctedDigits) return null;
-
-    const exactCandidate = extractCoordinatePriceCandidates(layout)
-      .find(candidate => String(candidate.value) === correctedDigits);
-
-    if (exactCandidate) return exactCandidate.bbox;
-    return context.selectedPrice ? context.selectedPrice.bbox : null;
-  }
-
-  function learnTemplateFromCorrection(context, item) {
-    const name = normalizeText(item.name);
-    const price = formatNumber(item.price);
-    if (!context.layout || !isUsableName(name) || !price) return null;
-
-    const nameBox = findNameBoxForCorrection(context, name);
-    const priceBox = findPriceBoxForCorrection(context, price);
-    if (!nameBox || !priceBox) return null;
-
-    const layout = context.layout;
-    const signature = getLayoutSignature(layout);
-    const existing = priceTagTemplates.find(template => template.signature === signature);
-
-    return {
-      id: existing?.id || `${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      signature,
-      createdAt: existing?.createdAt || Date.now(),
-      updatedAt: Date.now(),
-      hits: existing?.hits || 0,
-      samples: Math.min((existing?.samples || 0) + 1, 999),
-      nameRegion: bboxToRegion(nameBox, layout.width, layout.height, 0.035),
-      priceRegion: bboxToRegion(priceBox, layout.width, layout.height, 0.035),
-    };
   }
 
   function addScannedItem(parsed) {
@@ -1237,9 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
     item.count = 1;
     saveToLocalStorage();
     renderAll();
-    if (parsed.layout) {
-      pendingScanContexts.set(item.id, parsed);
-    }
     lastScannedItemId = item.id;
 
     const row = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
@@ -1259,49 +726,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cameraBtn.disabled = true;
     showPreview(file);
-    setScanMessage('가격표 이미지를 준비하는 중입니다.');
-
-    try {
-      const variants = await prepareImageVariantsForOcr(file);
-      const parsedCandidates = [];
-
-      for (let index = 0; index < variants.length; index += 1) {
-        const variant = variants[index];
-        const { data } = await window.Tesseract.recognize(variant.image, 'kor+eng', {
-          logger: (progress) => {
-            if (progress.status === 'recognizing text') {
-              const pct = Math.round((progress.progress || 0) * 100);
-              setScanMessage(`가격표 글자를 읽는 중입니다. ${index + 1}/${variants.length} · ${pct}%`);
-            }
-          },
-        });
-        const parsedVariant = parsePriceTag(data);
-        parsedCandidates.push({
-          ...parsedVariant,
-          variant: variant.id,
-          selectionScore: scoreExtractionResult(parsedVariant),
-        });
-      }
-
-      const parsed = parsedCandidates.sort((a, b) => b.selectionScore - a.selectionScore)[0] || {
-        name: '',
-        price: '',
-        method: 'text',
-        confidence: 0,
-      };
-      addScannedItem(parsed);
-
-      if (parsed.name || parsed.price) {
-        setScanMessage('사진에서 읽은 내용을 입력했습니다. 필요하면 바로 수정하세요.', parsed);
-      } else {
-        setScanMessage('상품명과 단가를 찾지 못했습니다. 가격표가 화면에 크게 보이도록 다시 찍어 주세요.');
-      }
-    } catch (err) {
-      console.error('OCR failed:', err);
-      setScanMessage('사진을 읽는 중 오류가 발생했습니다. 다시 촬영해 주세요.');
-    } finally {
-      cameraBtn.disabled = false;
-    }
+    setScanMessage('상품명과 가격 영역을 지정해 주세요.');
+    openRegionModal();
+    cameraBtn.disabled = false;
   }
 
   cameraBtn.addEventListener('click', () => {
