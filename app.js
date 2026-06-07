@@ -35,9 +35,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultRegionRunText = regionRunBtn.textContent;
 
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./sw.js').catch((err) => {
-      console.error('Service Worker registration failed:', err);
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
     });
+
+    navigator.serviceWorker.register('./sw.js')
+      .then((registration) => registration.update())
+      .catch((err) => {
+        console.error('Service Worker registration failed:', err);
+      });
   }
 
   window.addEventListener('beforeinstallprompt', (e) => {

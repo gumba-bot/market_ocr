@@ -1,4 +1,4 @@
-const CACHE_NAME = 'market-cal-v3';
+const CACHE_NAME = 'market-cal-v4';
 const ASSETS = [
   './',
   './index.html',
@@ -30,17 +30,35 @@ self.addEventListener('activate', (event) => {
         })
       );
     })
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window', includeUncontrolled: true }))
+      .then((clients) => Promise.all(
+        clients.map((client) => ('navigate' in client ? client.navigate(client.url) : undefined))
+      ))
   );
 });
 
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        if (response) {
-          return response;
-        }
-        return fetch(event.request);
-      })
-  );
+  if (event.request.method !== 'GET') return;
+
+  const url = new URL(event.request.url);
+  if (url.origin !== self.location.origin) return;
+
+  event.respondWith(networkFirst(event.request));
 });
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+
+  try {
+    const response = await fetch(request);
+    if (response && response.ok) {
+      await cache.put(request, response.clone());
+    }
+    return response;
+  } catch (error) {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw error;
+  }
+}
