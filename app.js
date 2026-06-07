@@ -271,14 +271,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  function hideScanPanel() {
-    scanPanel.hidden = true;
-    scanResult.hidden = true;
-    scanResult.innerHTML = '';
-    scanPreview.hidden = true;
-    areaSelectBtn.hidden = true;
-  }
-
   function showPreview(file) {
     if (currentPreviewUrl) {
       URL.revokeObjectURL(currentPreviewUrl);
@@ -688,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       addScannedItem(parsed);
       closeRegionModal();
-      hideScanPanel();
+      setScanMessage('선택한 영역에서 읽은 내용을 입력했습니다. 필요하면 바로 수정하세요.', parsed);
     } catch (err) {
       console.error('Manual region OCR failed:', err);
       regionHelp.textContent = defaultRegionHelpText;
@@ -728,15 +720,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
   async function handlePhoto(file) {
     if (!file) return;
-    if (!window.Tesseract) {
-      setScanMessage('OCR 라이브러리를 불러오지 못했습니다. 인터넷 연결 후 다시 시도해 주세요.');
-      return;
-    }
 
     cameraBtn.disabled = true;
     showPreview(file);
-    setScanMessage('상품명과 가격 영역을 지정해 주세요.');
-    openRegionModal();
+    setScanMessage('사진을 불러왔습니다. 영역 지정을 눌러 상품명과 가격을 선택하세요.');
     cameraBtn.disabled = false;
   }
 
