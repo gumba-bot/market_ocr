@@ -283,9 +283,14 @@ body {
   pointer-events: none;
 }
 
-.tag-region-box {
+.name-region-box {
   border-color: #2563EB;
   background: rgba(37, 99, 235, 0.18);
+}
+
+.price-region-box {
+  border-color: #DC2626;
+  background: rgba(220, 38, 38, 0.18);
 }
 
 .draft-region-box {
