@@ -15,22 +15,18 @@ document.addEventListener('DOMContentLoaded', () => {
   const regionImage = document.querySelector('.region-image');
   const regionImageWrap = document.querySelector('.region-image-wrap');
   const regionHelp = document.querySelector('.region-help');
-  const regionModeBtns = document.querySelectorAll('.region-mode-btn');
   const regionCloseBtn = document.querySelector('.region-close-btn');
   const regionRunBtn = document.querySelector('.region-run-btn');
   const regionResetBtn = document.querySelector('.region-reset-btn');
-  const nameRegionBox = document.querySelector('.name-region-box');
-  const priceRegionBox = document.querySelector('.price-region-box');
+  const tagRegionBox = document.querySelector('.tag-region-box');
   const draftRegionBox = document.querySelector('.draft-region-box');
 
   let items = [];
   let deferredPrompt;
   let currentPreviewUrl = '';
   let currentPhotoFile = null;
-  let lastScannedItemId = '';
-  let regionMode = 'name';
   let regionDraftStart = null;
-  let regionSelection = { name: null, price: null };
+  let regionSelection = null;
   const defaultRegionHelpText = regionHelp.textContent;
   const defaultRegionRunText = regionRunBtn.textContent;
 
@@ -577,15 +573,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function updateRegionBoxes() {
-    drawRegionBox(nameRegionBox, regionSelection.name);
-    drawRegionBox(priceRegionBox, regionSelection.price);
-  }
-
-  function setRegionMode(mode) {
-    regionMode = mode;
-    regionModeBtns.forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.mode === mode);
-    });
+    drawRegionBox(tagRegionBox, regionSelection);
   }
 
   function openRegionModal() {
@@ -594,12 +582,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    regionSelection = { name: null, price: null };
+    regionSelection = null;
     regionDraftStart = null;
     draftRegionBox.hidden = true;
     regionHelp.textContent = defaultRegionHelpText;
     regionRunBtn.textContent = defaultRegionRunText;
-    setRegionMode('name');
     regionImage.src = currentPreviewUrl;
     regionModal.hidden = false;
     requestAnimationFrame(updateRegionBoxes);
@@ -609,32 +596,25 @@ document.addEventListener('DOMContentLoaded', () => {
     regionModal.hidden = true;
     regionDraftStart = null;
     draftRegionBox.hidden = true;
+
+    if (currentPhotoFile && scanPanel.hidden) {
+      setScanMessage('촬영한 사진이 있습니다. 영역 다시 지정을 눌러 OCR을 진행하세요.');
+    }
   }
 
   function resetRegionSelection() {
-    regionSelection = { name: null, price: null };
+    regionSelection = null;
     regionDraftStart = null;
     draftRegionBox.hidden = true;
     regionHelp.textContent = defaultRegionHelpText;
     regionRunBtn.textContent = defaultRegionRunText;
     updateRegionBoxes();
-    setRegionMode('name');
-  }
-
-  function extractManualName(text) {
-    const lines = String(text || '')
-      .split(/\r?\n/)
-      .map(cleanLine)
-      .map(stripPriceText)
-      .filter(isUsableName)
-      .sort((a, b) => b.length - a.length);
-    return lines[0] || cleanLine(String(text || '').split(/\r?\n/).find(Boolean) || '');
   }
 
   async function runSelectedRegionOcr() {
     if (!currentPhotoFile) return;
-    if (!regionSelection.name || !regionSelection.price) {
-      setScanMessage('상품명 영역과 가격 영역을 모두 지정해 주세요.');
+    if (!regionSelection) {
+      regionHelp.textContent = '가격표 영역을 먼저 드래그해 주세요.';
       return;
     }
     if (!window.Tesseract) {
@@ -649,34 +629,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setScanMessage('OCR 준비 중입니다. 0%');
 
     try {
-      const nameImage = await prepareRegionForOcr(currentPhotoFile, regionSelection.name);
-      const priceImage = await prepareRegionForOcr(currentPhotoFile, regionSelection.price);
-      const progressState = { name: 0, price: 0 };
-      const updateProgress = () => {
-        const pct = Math.round((progressState.name + progressState.price) / 2);
+      const tagImage = await prepareRegionForOcr(currentPhotoFile, regionSelection);
+      const progressLogger = (progress) => {
+        if (progress.status !== 'recognizing text') return;
+        const pct = Math.round((progress.progress || 0) * 100);
         const message = `OCR 진행 중입니다. ${pct}%`;
         regionHelp.textContent = message;
         regionRunBtn.textContent = `OCR ${pct}%`;
         setScanMessage(message);
       };
-      const createProgressLogger = key => (progress) => {
-        if (progress.status !== 'recognizing text') return;
-        progressState[key] = Math.max(progressState[key], Math.round((progress.progress || 0) * 100));
-        updateProgress();
-      };
-      updateProgress();
-      const [nameOcr, priceOcr] = await Promise.all([
-        window.Tesseract.recognize(nameImage, 'kor+eng', { logger: createProgressLogger('name') }),
-        window.Tesseract.recognize(priceImage, 'kor+eng', { logger: createProgressLogger('price') }),
-      ]);
-      const priceParsed = parseLinePriceTag(priceOcr.data.text || '');
+      const ocr = await window.Tesseract.recognize(tagImage, 'kor+eng', { logger: progressLogger });
       const parsed = {
-        name: extractManualName(nameOcr.data.text || ''),
-        price: priceParsed.price || '',
-        rawText: `${nameOcr.data.text || ''}\n${priceOcr.data.text || ''}`,
+        ...parseLinePriceTag(ocr.data.text || ''),
         method: 'manual',
-        confidence: priceParsed.price ? 85 : 55,
+        confidence: 45,
       };
+      parsed.confidence = parsed.price ? 80 : 45;
 
       addScannedItem(parsed);
       closeRegionModal();
@@ -694,10 +662,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function addScannedItem(parsed) {
-    const manualTarget = parsed.method === 'manual' && lastScannedItemId
-      ? items.find(item => item.id === lastScannedItemId)
-      : null;
-    const target = manualTarget || items.find(item => !item.name && !item.price);
+    const target = items.find(item => !item.name && !item.price);
     const item = target || createItem();
     if (!target) {
       items.push(item);
@@ -708,7 +673,6 @@ document.addEventListener('DOMContentLoaded', () => {
     item.count = 1;
     saveToLocalStorage();
     renderAll();
-    lastScannedItemId = item.id;
 
     const row = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
     if (row) {
@@ -723,7 +687,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cameraBtn.disabled = true;
     showPreview(file);
-    setScanMessage('사진을 불러왔습니다. 영역 지정을 눌러 상품명과 가격을 선택하세요.');
+    scanPanel.hidden = true;
+    openRegionModal();
     cameraBtn.disabled = false;
   }
 
@@ -744,10 +709,6 @@ document.addEventListener('DOMContentLoaded', () => {
   regionImage.addEventListener('load', updateRegionBoxes);
   window.addEventListener('resize', () => {
     if (!regionModal.hidden) updateRegionBoxes();
-  });
-
-  regionModeBtns.forEach((btn) => {
-    btn.addEventListener('click', () => setRegionMode(btn.dataset.mode));
   });
 
   regionImageWrap.addEventListener('pointerdown', (event) => {
@@ -775,11 +736,8 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    regionSelection[regionMode] = region;
+    regionSelection = region;
     updateRegionBoxes();
-    if (regionMode === 'name' && !regionSelection.price) {
-      setRegionMode('price');
-    }
   });
 
   regionImageWrap.addEventListener('pointercancel', () => {
@@ -794,7 +752,6 @@ document.addEventListener('DOMContentLoaded', () => {
       renderAll();
       scanPanel.hidden = true;
       currentPhotoFile = null;
-      lastScannedItemId = '';
       areaSelectBtn.hidden = true;
     }
   });
