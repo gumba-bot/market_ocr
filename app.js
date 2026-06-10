@@ -265,23 +265,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function setScanMessage(message, result = null) {
     setElementHidden(scanPanel, false);
-    scanStatus.textContent = message;
+    scanStatus.textContent = message || '';
+    setElementHidden(scanStatus, !message);
     areaSelectBtn.hidden = !currentPhotoFile;
 
     if (result) {
-      const methodLabel = result.method === 'template'
-        ? '저장된 구조'
-        : result.method === 'coordinates'
-          ? '좌표 분석'
-          : result.method === 'manual'
-            ? '지정 영역'
-            : '텍스트 분석';
-      const confidence = Number.isFinite(result.confidence) ? ` · ${result.confidence}%` : '';
       scanResult.hidden = false;
       scanResult.innerHTML = `
         <span>${escapeAttr(result.name || '상품명 확인 필요')}</span>
         <strong>${escapeAttr(result.price || '단가 확인 필요')}</strong>
-        <em>${escapeAttr(methodLabel + confidence)}</em>
       `;
     } else {
       scanResult.hidden = true;
@@ -298,6 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPreviewUrl = URL.createObjectURL(file);
     scanPreview.src = currentPreviewUrl;
     setElementHidden(scanPreview, false);
+    areaSelectBtn.textContent = '영역 지정';
     areaSelectBtn.hidden = false;
   }
 
@@ -722,7 +715,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
       addScannedItem(parsed);
       closeRegionModal();
-      setElementHidden(scanPanel, true);
+      areaSelectBtn.textContent = '다시 지정';
+      setScanMessage('', parsed);
     } catch (err) {
       console.error('Manual region OCR failed:', err);
       regionHelp.textContent = defaultRegionHelpText;
