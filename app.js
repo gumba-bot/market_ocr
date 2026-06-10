@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const scanStatus = document.querySelector('.scan-status');
   const scanResult = document.querySelector('.scan-result');
   const areaSelectBtn = document.querySelector('.area-select-btn');
+  const manualAddBtn = document.querySelector('.manual-add-btn');
   const regionModal = document.querySelector('.region-modal');
   const regionImage = document.querySelector('.region-image');
   const regionImageWrap = document.querySelector('.region-image-wrap');
@@ -30,8 +31,13 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultRegionHelpText = regionHelp.textContent;
   const defaultRegionRunText = regionRunBtn.textContent;
 
-  scanPanel.hidden = true;
-  regionModal.hidden = true;
+  function setElementHidden(element, hidden) {
+    element.hidden = hidden;
+    element.style.display = hidden ? 'none' : '';
+  }
+
+  setElementHidden(scanPanel, true);
+  setElementHidden(regionModal, true);
 
   if ('serviceWorker' in navigator) {
     let refreshing = false;
@@ -237,6 +243,15 @@ document.addEventListener('DOMContentLoaded', () => {
     itemsList.appendChild(row);
   }
 
+  function focusItem(item) {
+    const row = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
+    if (!row) return;
+
+    const inputToFocus = item.name ? row.querySelector('.price-input') : row.querySelector('.item-input');
+    inputToFocus.focus();
+    inputToFocus.select();
+  }
+
   function renderAll() {
     itemsList.innerHTML = '';
     items.forEach(item => appendRow(item));
@@ -245,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function setScanMessage(message, result = null) {
-    scanPanel.hidden = false;
+    setElementHidden(scanPanel, false);
     scanStatus.textContent = message;
     areaSelectBtn.hidden = !currentPhotoFile;
 
@@ -278,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
     currentPhotoFile = file;
     currentPreviewUrl = URL.createObjectURL(file);
     scanPreview.src = currentPreviewUrl;
-    scanPreview.hidden = false;
+    setElementHidden(scanPreview, false);
     areaSelectBtn.hidden = false;
   }
 
@@ -591,12 +606,12 @@ document.addEventListener('DOMContentLoaded', () => {
     regionHelp.textContent = defaultRegionHelpText;
     regionRunBtn.textContent = defaultRegionRunText;
     regionImage.src = currentPreviewUrl;
-    regionModal.hidden = false;
+    setElementHidden(regionModal, false);
     requestAnimationFrame(updateRegionBoxes);
   }
 
   function closeRegionModal() {
-    regionModal.hidden = true;
+    setElementHidden(regionModal, true);
     regionDraftStart = null;
     draftRegionBox.hidden = true;
 
@@ -676,13 +691,15 @@ document.addEventListener('DOMContentLoaded', () => {
     item.count = 1;
     saveToLocalStorage();
     renderAll();
+    focusItem(item);
+  }
 
-    const row = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
-    if (row) {
-      const inputToFocus = item.name ? row.querySelector('.price-input') : row.querySelector('.item-input');
-      inputToFocus.focus();
-      inputToFocus.select();
-    }
+  function addManualItem() {
+    const item = createItem();
+    items.push(item);
+    saveToLocalStorage();
+    renderAll();
+    focusItem(item);
   }
 
   async function handlePhoto(file) {
@@ -690,7 +707,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cameraBtn.disabled = true;
     showPreview(file);
-    regionModal.hidden = true;
+    setElementHidden(regionModal, true);
     setScanMessage('촬영한 사진이 있습니다. 영역 지정을 눌러 OCR을 진행하세요.');
     cameraBtn.disabled = false;
   }
@@ -705,6 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   areaSelectBtn.addEventListener('click', openRegionModal);
+  manualAddBtn.addEventListener('click', addManualItem);
 
   regionCloseBtn.addEventListener('click', closeRegionModal);
   regionResetBtn.addEventListener('click', resetRegionSelection);
@@ -753,7 +771,7 @@ document.addEventListener('DOMContentLoaded', () => {
       items = [createItem()];
       saveToLocalStorage();
       renderAll();
-      scanPanel.hidden = true;
+      setElementHidden(scanPanel, true);
       currentPhotoFile = null;
       areaSelectBtn.hidden = true;
     }

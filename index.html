@@ -23,8 +23,8 @@
           <input class="photo-input" type="file" accept="image/*" capture="environment" hidden />
         </header>
 
-        <div class="scan-panel" hidden>
-          <img class="scan-preview" alt="촬영한 가격표" hidden />
+        <div class="scan-panel" hidden style="display: none;">
+          <img class="scan-preview" alt="촬영한 가격표" hidden style="display: none;" />
           <div class="scan-copy">
             <div class="scan-status">가격표를 읽는 중입니다.</div>
             <div class="scan-result" hidden></div>
@@ -38,17 +38,27 @@
             <span class="value count-value">0개</span>
           </div>
           <div class="col">
-            <span class="label">총 합계</span>
+            <span class="label">금액 합계</span>
             <span class="value price-value">0원</span>
           </div>
         </div>
       </div>
 
       <div class="table-container">
+        <div class="item-column-header" aria-hidden="true">
+          <div class="col name-col">상품명</div>
+          <div class="col price-col">단가</div>
+          <div class="col count-col">수량</div>
+          <div class="col total-col">금액</div>
+          <div class="col delete-col"></div>
+        </div>
         <div class="items-list"></div>
+        <div class="manual-actions">
+          <button class="manual-add-btn" type="button">수동 입력 추가</button>
+        </div>
       </div>
 
-      <div class="region-modal" hidden>
+      <div class="region-modal" hidden style="display: none;">
         <div class="region-dialog" role="dialog" aria-modal="true" aria-label="OCR 영역 지정">
           <div class="region-header">
             <strong>가격표 영역 지정</strong>
