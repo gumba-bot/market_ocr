@@ -16,6 +16,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const regionImage = document.querySelector('.region-image');
   const regionImageWrap = document.querySelector('.region-image-wrap');
   const regionHelp = document.querySelector('.region-help');
+  const nameStep = document.querySelector('.name-step');
+  const priceStep = document.querySelector('.price-step');
   const regionCloseBtn = document.querySelector('.region-close-btn');
   const regionRunBtn = document.querySelector('.region-run-btn');
   const regionResetBtn = document.querySelector('.region-reset-btn');
@@ -580,12 +582,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
   function drawRegionBox(box, region) {
     if (!region) {
-      box.hidden = true;
+      setElementHidden(box, true);
       return;
     }
 
     const rect = getImageContentRect();
-    box.hidden = false;
+    setElementHidden(box, false);
     box.style.left = `${rect.left + (region.x0 * rect.width)}px`;
     box.style.top = `${rect.top + (region.y0 * rect.height)}px`;
     box.style.width = `${Math.max(28, (region.x1 - region.x0) * rect.width)}px`;
@@ -597,18 +599,28 @@ document.addEventListener('DOMContentLoaded', () => {
     drawRegionBox(priceRegionBox, regionSelection.price);
   }
 
+  function hasBothRegions() {
+    return Boolean(regionSelection.name && regionSelection.price);
+  }
+
+  function updateRegionSteps() {
+    nameStep.classList.toggle('active', regionMode === 'name' && !regionSelection.name);
+    nameStep.classList.toggle('done', Boolean(regionSelection.name));
+    priceStep.classList.toggle('active', regionMode === 'price' && !regionSelection.price);
+    priceStep.classList.toggle('done', Boolean(regionSelection.price));
+    regionRunBtn.disabled = !hasBothRegions();
+  }
+
   function updateRegionHelp() {
     if (!regionSelection.name) {
       regionHelp.textContent = '1단계: 상품명 영역을 드래그하세요.';
-      return;
-    }
-
-    if (!regionSelection.price) {
+    } else if (!regionSelection.price) {
       regionHelp.textContent = '2단계: 가격 영역을 드래그하세요.';
-      return;
+    } else {
+      regionHelp.textContent = '상품명과 가격 영역이 지정되었습니다. OCR 후 상품 추가를 누르세요.';
     }
 
-    regionHelp.textContent = '상품명과 가격 영역이 지정되었습니다. OCR 후 상품 추가를 누르세요.';
+    updateRegionSteps();
   }
 
   function setRegionMode(mode) {
@@ -624,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     regionSelection = { name: null, price: null };
     regionDraftStart = null;
-    draftRegionBox.hidden = true;
+    setElementHidden(draftRegionBox, true);
     setRegionMode('name');
     regionRunBtn.textContent = defaultRegionRunText;
     regionImage.src = currentPreviewUrl;
@@ -635,7 +647,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function closeRegionModal() {
     setElementHidden(regionModal, true);
     regionDraftStart = null;
-    draftRegionBox.hidden = true;
+    setElementHidden(draftRegionBox, true);
 
     if (currentPhotoFile && scanPanel.hidden) {
       setScanMessage('촬영한 사진이 있습니다. 영역 지정을 눌러 OCR을 진행하세요.');
@@ -645,7 +657,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function resetRegionSelection() {
     regionSelection = { name: null, price: null };
     regionDraftStart = null;
-    draftRegionBox.hidden = true;
+    setElementHidden(draftRegionBox, true);
     setRegionMode('name');
     regionRunBtn.textContent = defaultRegionRunText;
     updateRegionBoxes();
@@ -720,6 +732,7 @@ document.addEventListener('DOMContentLoaded', () => {
       regionRunBtn.disabled = false;
       areaSelectBtn.disabled = false;
       regionRunBtn.textContent = defaultRegionRunText;
+      updateRegionSteps();
     }
   }
 
@@ -781,6 +794,7 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     regionImageWrap.setPointerCapture(event.pointerId);
     regionDraftStart = pointerToImagePoint(event);
+    draftRegionBox.textContent = regionMode === 'name' ? '상품명' : '가격';
     drawRegionBox(draftRegionBox, normalizeRegion(regionDraftStart, regionDraftStart));
   });
 
@@ -795,9 +809,10 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault();
     const region = normalizeRegion(regionDraftStart, pointerToImagePoint(event));
     regionDraftStart = null;
-    draftRegionBox.hidden = true;
+    setElementHidden(draftRegionBox, true);
 
     if ((region.x1 - region.x0) < 0.03 || (region.y1 - region.y0) < 0.03) {
+      updateRegionHelp();
       return;
     }
 
@@ -813,7 +828,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   regionImageWrap.addEventListener('pointercancel', () => {
     regionDraftStart = null;
-    draftRegionBox.hidden = true;
+    setElementHidden(draftRegionBox, true);
+    updateRegionHelp();
   });
 
   clearBtn.addEventListener('click', () => {

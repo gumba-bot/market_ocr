@@ -249,6 +249,38 @@ body {
   padding: 0.75rem 1rem;
 }
 
+.region-steps {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  padding: 0 1rem 0.75rem;
+}
+
+.region-step {
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  background: #F9FAFB;
+  color: var(--text-light);
+  font-size: 0.85rem;
+  font-weight: 800;
+  min-height: 2.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.region-step.active {
+  border-color: #2563EB;
+  background: #DBEAFE;
+  color: #1D4ED8;
+}
+
+.region-step.done {
+  border-color: #10B981;
+  background: #D1FAE5;
+  color: #047857;
+}
+
 .region-image-wrap {
   position: relative;
   flex: 1;
@@ -281,6 +313,10 @@ body {
   min-height: 24px;
   padding: 0.125rem 0.25rem;
   pointer-events: none;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
 }
 
 .name-region-box {
@@ -309,6 +345,13 @@ body {
   border-color: var(--primary-color);
   background: var(--primary-color);
   color: white;
+}
+
+.region-run-btn:disabled {
+  border-color: var(--border-color);
+  background: #E5E7EB;
+  color: var(--text-light);
+  cursor: not-allowed;
 }
 
 .table-container {
