@@ -374,16 +374,18 @@ body {
 .total-row {
   display: flex;
   background-color: #F9FAFB;
-  border-bottom: 2px solid var(--border-color);
-  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  padding: 0.45rem 0.75rem;
 }
 
 .total-row .col {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
+  min-width: 0;
 }
 
 .total-row .col:first-child {
@@ -391,15 +393,17 @@ body {
 }
 
 .total-row .label {
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   color: var(--text-light);
-  margin-bottom: 0.25rem;
-  font-weight: 500;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .total-row .value {
-  font-size: 1.5rem;
+  font-size: 1.05rem;
   font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
 .count-value {
@@ -547,8 +551,16 @@ body {
     font-size: 0.78rem;
   }
   
+  .total-row {
+    padding: 0.4rem 0.6rem;
+  }
+
+  .total-row .label {
+    font-size: 0.68rem;
+  }
+
   .total-row .value {
-    font-size: 1.25rem;
+    font-size: 0.95rem;
   }
 
   .item-column-header {
