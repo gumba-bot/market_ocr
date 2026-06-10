@@ -30,6 +30,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultRegionHelpText = regionHelp.textContent;
   const defaultRegionRunText = regionRunBtn.textContent;
 
+  scanPanel.hidden = true;
+  regionModal.hidden = true;
+
   if ('serviceWorker' in navigator) {
     let refreshing = false;
     navigator.serviceWorker.addEventListener('controllerchange', () => {
@@ -598,7 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     draftRegionBox.hidden = true;
 
     if (currentPhotoFile && scanPanel.hidden) {
-      setScanMessage('촬영한 사진이 있습니다. 영역 다시 지정을 눌러 OCR을 진행하세요.');
+      setScanMessage('촬영한 사진이 있습니다. 영역 지정을 눌러 OCR을 진행하세요.');
     }
   }
 
@@ -687,8 +690,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     cameraBtn.disabled = true;
     showPreview(file);
-    scanPanel.hidden = true;
-    openRegionModal();
+    regionModal.hidden = true;
+    setScanMessage('촬영한 사진이 있습니다. 영역 지정을 눌러 OCR을 진행하세요.');
     cameraBtn.disabled = false;
   }
 
