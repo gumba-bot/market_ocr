@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.querySelector('.clear-btn');
   const installBtn = document.querySelector('.install-btn');
   const cameraBtn = document.querySelector('.camera-btn');
+  const settingsBtn = document.querySelector('.settings-btn');
   const photoInput = document.querySelector('.photo-input');
   const scanPanel = document.querySelector('.scan-panel');
   const scanPreview = document.querySelector('.scan-preview');
@@ -24,6 +25,11 @@ document.addEventListener('DOMContentLoaded', () => {
   const nameRegionBox = document.querySelector('.name-region-box');
   const priceRegionBox = document.querySelector('.price-region-box');
   const draftRegionBox = document.querySelector('.draft-region-box');
+  const settingsModal = document.querySelector('.settings-modal');
+  const settingsCloseBtn = document.querySelector('.settings-close-btn');
+  const fontScaleRange = document.querySelector('.font-scale-range');
+  const fontScaleValue = document.querySelector('.font-scale-value');
+  const fontResetBtn = document.querySelector('.font-reset-btn');
 
   let items = [];
   let deferredPrompt;
@@ -34,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
   let regionSelection = { name: null, price: null };
   const defaultRegionHelpText = regionHelp.textContent;
   const defaultRegionRunText = regionRunBtn.textContent;
+  const fontScaleStorageKey = 'market_cal_font_scale';
+  const defaultFontScale = 100;
 
   function setElementHidden(element, hidden) {
     element.hidden = hidden;
@@ -42,6 +50,34 @@ document.addEventListener('DOMContentLoaded', () => {
 
   setElementHidden(scanPanel, true);
   setElementHidden(regionModal, true);
+  setElementHidden(settingsModal, true);
+
+  function clampFontScale(value) {
+    const parsed = parseInt(value, 10);
+    if (!Number.isFinite(parsed)) return defaultFontScale;
+    return Math.max(85, Math.min(130, parsed));
+  }
+
+  function applyFontScale(value, shouldSave = true) {
+    const scale = clampFontScale(value);
+    document.documentElement.style.setProperty('--font-scale', String(scale / 100));
+    fontScaleRange.value = String(scale);
+    fontScaleValue.textContent = `${scale}%`;
+
+    if (shouldSave) {
+      localStorage.setItem(fontScaleStorageKey, String(scale));
+    }
+  }
+
+  function openSettings() {
+    setElementHidden(settingsModal, false);
+  }
+
+  function closeSettings() {
+    setElementHidden(settingsModal, true);
+  }
+
+  applyFontScale(localStorage.getItem(fontScaleStorageKey) || defaultFontScale, false);
 
   if ('serviceWorker' in navigator) {
     let refreshing = false;
@@ -774,6 +810,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
   areaSelectBtn.addEventListener('click', openRegionModal);
   manualAddBtn.addEventListener('click', addManualItem);
+  settingsBtn.addEventListener('click', openSettings);
+  settingsCloseBtn.addEventListener('click', closeSettings);
+  fontScaleRange.addEventListener('input', (event) => applyFontScale(event.target.value));
+  fontResetBtn.addEventListener('click', () => applyFontScale(defaultFontScale));
+  settingsModal.addEventListener('click', (event) => {
+    if (event.target === settingsModal) {
+      closeSettings();
+    }
+  });
 
   regionCloseBtn.addEventListener('click', closeRegionModal);
   regionResetBtn.addEventListener('click', resetRegionSelection);
