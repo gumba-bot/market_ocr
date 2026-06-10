@@ -98,7 +98,6 @@ body {
   gap: 0.5rem;
 }
 
-.install-btn,
 .camera-btn {
   background-color: #10B981;
   color: white;
@@ -112,7 +111,6 @@ body {
   white-space: nowrap;
 }
 
-.install-btn:hover,
 .camera-btn:hover {
   background-color: #059669;
 }
@@ -584,26 +582,6 @@ body {
   text-align: center;
 }
 
-.manual-actions {
-  padding: 0 1rem 1rem;
-}
-
-.manual-add-btn {
-  width: 100%;
-  min-height: 2.75rem;
-  border: 1px dashed var(--primary-color);
-  border-radius: 0.5rem;
-  background: #EEF2FF;
-  color: #3730A3;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-weight: 800;
-}
-
-.manual-add-btn:hover {
-  background: #E0E7FF;
-}
-
 /* Mobile optimizations */
 @media (max-width: 480px) {
   .app-container {
@@ -627,7 +605,6 @@ body {
   }
 
   .clear-btn,
-  .install-btn,
   .camera-btn,
   .settings-btn {
     padding: 0.45rem 0.55rem;
@@ -687,9 +664,5 @@ body {
     min-height: 34px;
     padding: 0.15rem;
     font-size: 0.68rem;
-  }
-
-  .manual-actions {
-    padding: 0 0.75rem 0.75rem;
   }
 }

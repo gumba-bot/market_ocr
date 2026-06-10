@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const totalCountEl = document.querySelector('.count-value');
   const totalPriceEl = document.querySelector('.price-value');
   const clearBtn = document.querySelector('.clear-btn');
-  const installBtn = document.querySelector('.install-btn');
   const cameraBtn = document.querySelector('.camera-btn');
   const settingsBtn = document.querySelector('.settings-btn');
   const photoInput = document.querySelector('.photo-input');
@@ -12,7 +11,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const scanStatus = document.querySelector('.scan-status');
   const scanResult = document.querySelector('.scan-result');
   const areaSelectBtn = document.querySelector('.area-select-btn');
-  const manualAddBtn = document.querySelector('.manual-add-btn');
   const regionModal = document.querySelector('.region-modal');
   const regionImage = document.querySelector('.region-image');
   const regionImageWrap = document.querySelector('.region-image-wrap');
@@ -32,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const fontResetBtn = document.querySelector('.font-reset-btn');
 
   let items = [];
-  let deferredPrompt;
   let currentPreviewUrl = '';
   let currentPhotoFile = null;
   let regionMode = 'name';
@@ -93,21 +90,6 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Service Worker registration failed:', err);
       });
   }
-
-  window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault();
-    deferredPrompt = e;
-    installBtn.style.display = 'block';
-  });
-
-  installBtn.addEventListener('click', async () => {
-    if (!deferredPrompt) return;
-
-    deferredPrompt.prompt();
-    await deferredPrompt.userChoice;
-    deferredPrompt = null;
-    installBtn.style.display = 'none';
-  });
 
   const saved = localStorage.getItem('market_cal_items');
   if (saved) {
@@ -781,14 +763,6 @@ document.addEventListener('DOMContentLoaded', () => {
     focusItem(item);
   }
 
-  function addManualItem() {
-    const item = createItem();
-    items.push(item);
-    saveToLocalStorage();
-    renderAll();
-    focusItem(item);
-  }
-
   async function handlePhoto(file) {
     if (!file) return;
 
@@ -809,7 +783,6 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   areaSelectBtn.addEventListener('click', openRegionModal);
-  manualAddBtn.addEventListener('click', addManualItem);
   settingsBtn.addEventListener('click', openSettings);
   settingsCloseBtn.addEventListener('click', closeSettings);
   fontScaleRange.addEventListener('input', (event) => applyFontScale(event.target.value));
