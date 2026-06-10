@@ -722,7 +722,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       addScannedItem(parsed);
       closeRegionModal();
-      setScanMessage('선택한 영역에서 읽은 내용을 입력했습니다. 필요하면 바로 수정하세요.', parsed);
+      setElementHidden(scanPanel, true);
     } catch (err) {
       console.error('Manual region OCR failed:', err);
       regionHelp.textContent = defaultRegionHelpText;
