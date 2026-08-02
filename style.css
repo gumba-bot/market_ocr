@@ -133,6 +133,8 @@ body {
 
 .settings-dialog {
   width: min(100%, 360px);
+  max-height: calc(100vh - 2rem);
+  overflow-y: auto;
   border-radius: 0.5rem;
   background: var(--surface-color);
   box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
@@ -178,6 +180,58 @@ body {
   width: 100%;
   margin: 1rem 0;
   accent-color: var(--primary-color);
+}
+
+.purchased-style-setting {
+  border: 0;
+  margin-top: 0.25rem;
+  padding-top: 1rem;
+}
+
+.purchased-style-setting legend {
+  width: 100%;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-main);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding-top: 1rem;
+}
+
+.purchased-style-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  margin-top: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  padding: 0.75rem;
+}
+
+.purchased-style-option:has(input:checked) {
+  border-color: var(--primary-color);
+  background: #EEF2FF;
+}
+
+.purchased-style-option input {
+  flex: 0 0 auto;
+  margin-top: 0.2rem;
+  accent-color: var(--primary-color);
+}
+
+.purchased-style-option span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.purchased-style-option strong {
+  font-size: 0.9rem;
+}
+
+.purchased-style-option small {
+  color: var(--text-light);
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 
 .settings-actions {
@@ -515,6 +569,28 @@ body {
   margin-bottom: 0.75rem;
   animation: slideIn 0.2s ease-out;
   align-items: center;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+[data-purchased-style="green"] .item-row.has-price {
+  background-color: #E9F8E7;
+  box-shadow: 0 0 0 0.35rem #E9F8E7;
+}
+
+[data-purchased-style="green"] .item-row.has-price .item-input,
+[data-purchased-style="green"] .item-row.has-price .price-input,
+[data-purchased-style="green"] .item-row.has-price .count-input {
+  background-color: #F4FCF2;
+}
+
+[data-purchased-style="strikethrough"] .item-row.has-price .item-input,
+[data-purchased-style="strikethrough"] .item-row.has-price .price-input,
+[data-purchased-style="strikethrough"] .item-row.has-price .count-input,
+[data-purchased-style="strikethrough"] .item-row.has-price .item-total {
+  color: var(--text-light);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
 }
 
 @keyframes slideIn {

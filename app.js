@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fontScaleRange = document.querySelector('.font-scale-range');
   const fontScaleValue = document.querySelector('.font-scale-value');
   const fontResetBtn = document.querySelector('.font-reset-btn');
+  const purchasedStyleOptions = document.querySelectorAll('input[name="purchased-style"]');
 
   let items = [];
   let currentPreviewUrl = '';
@@ -39,6 +40,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const defaultRegionRunText = regionRunBtn.textContent;
   const fontScaleStorageKey = 'market_cal_font_scale';
   const defaultFontScale = 100;
+  const purchasedStyleStorageKey = 'market_cal_purchased_style';
+  const defaultPurchasedStyle = 'green';
 
   function setElementHidden(element, hidden) {
     element.hidden = hidden;
@@ -66,6 +69,18 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
+  function applyPurchasedStyle(value, shouldSave = true) {
+    const style = value === 'strikethrough' ? 'strikethrough' : defaultPurchasedStyle;
+    document.documentElement.dataset.purchasedStyle = style;
+    purchasedStyleOptions.forEach((option) => {
+      option.checked = option.value === style;
+    });
+
+    if (shouldSave) {
+      localStorage.setItem(purchasedStyleStorageKey, style);
+    }
+  }
+
   function openSettings() {
     setElementHidden(settingsModal, false);
   }
@@ -75,6 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   applyFontScale(localStorage.getItem(fontScaleStorageKey) || defaultFontScale, false);
+  applyPurchasedStyle(localStorage.getItem(purchasedStyleStorageKey) || defaultPurchasedStyle, false);
 
   if ('serviceWorker' in navigator) {
     let refreshing = false;
@@ -158,6 +174,10 @@ document.addEventListener('DOMContentLoaded', () => {
     row.querySelector('.item-total').textContent = itemTotal > 0 ? itemTotal.toLocaleString('ko-KR') : '';
   }
 
+  function updatePurchasedState(row, item) {
+    row.classList.toggle('has-price', item.price !== '');
+  }
+
   function checkAutoAdd() {
     if (items.length === 0) return;
     const lastItem = items[items.length - 1];
@@ -198,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const priceInput = row.querySelector('.price-input');
     const countInput = row.querySelector('.count-input');
     const deleteBtn = row.querySelector('.delete-item-btn');
+    updatePurchasedState(row, item);
 
     nameInput.addEventListener('input', (e) => {
       item.name = e.target.value;
@@ -222,6 +243,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       updateRowTotal(row, item);
+      updatePurchasedState(row, item);
       saveToLocalStorage();
       updateTotals();
       checkAutoAdd();
@@ -252,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
         priceInput.value = '';
         countInput.value = 1;
         updateRowTotal(row, item);
+        updatePurchasedState(row, item);
       } else {
         items.splice(idx, 1);
         row.remove();
@@ -787,6 +810,11 @@ document.addEventListener('DOMContentLoaded', () => {
   settingsCloseBtn.addEventListener('click', closeSettings);
   fontScaleRange.addEventListener('input', (event) => applyFontScale(event.target.value));
   fontResetBtn.addEventListener('click', () => applyFontScale(defaultFontScale));
+  purchasedStyleOptions.forEach((option) => {
+    option.addEventListener('change', (event) => {
+      if (event.target.checked) applyPurchasedStyle(event.target.value);
+    });
+  });
   settingsModal.addEventListener('click', (event) => {
     if (event.target === settingsModal) {
       closeSettings();
