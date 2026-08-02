@@ -178,6 +178,44 @@ document.addEventListener('DOMContentLoaded', () => {
     row.classList.toggle('has-price', item.price !== '');
   }
 
+  function isPopulatedItem(item) {
+    return Boolean((item.name && item.name.trim() !== '') || item.price !== '');
+  }
+
+  function findPopulatedItemIndex(startIndex, direction) {
+    for (let index = startIndex + direction; index >= 0 && index < items.length; index += direction) {
+      if (isPopulatedItem(items[index])) return index;
+    }
+    return -1;
+  }
+
+  function updateMoveButtonStates() {
+    items.forEach((item, index) => {
+      const row = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
+      if (!row) return;
+
+      const isPopulated = isPopulatedItem(item);
+      row.querySelector('.move-up-btn').disabled = !isPopulated || findPopulatedItemIndex(index, -1) < 0;
+      row.querySelector('.move-down-btn').disabled = !isPopulated || findPopulatedItemIndex(index, 1) < 0;
+    });
+  }
+
+  function moveItem(item, direction) {
+    const currentIndex = items.indexOf(item);
+    const targetIndex = findPopulatedItemIndex(currentIndex, direction);
+    if (currentIndex < 0 || !isPopulatedItem(item) || targetIndex < 0) return;
+
+    [items[currentIndex], items[targetIndex]] = [items[targetIndex], items[currentIndex]];
+    saveToLocalStorage();
+    renderAll();
+
+    const movedRow = itemsList.querySelector(`[data-item-id="${CSS.escape(item.id)}"]`);
+    if (!movedRow) return;
+    const preferredButton = movedRow.querySelector(direction < 0 ? '.move-up-btn' : '.move-down-btn');
+    const fallbackButton = movedRow.querySelector(direction < 0 ? '.move-down-btn' : '.move-up-btn');
+    (preferredButton.disabled ? fallbackButton : preferredButton).focus();
+  }
+
   function checkAutoAdd() {
     if (items.length === 0) return;
     const lastItem = items[items.length - 1];
@@ -186,6 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
       items.push(newItem);
       appendRow(newItem);
     }
+    updateMoveButtonStates();
   }
 
   function appendRow(item) {
@@ -197,6 +236,10 @@ document.addEventListener('DOMContentLoaded', () => {
     row.className = 'item-row';
     row.dataset.itemId = item.id;
     row.innerHTML = `
+      <div class="col move-col">
+        <button class="move-item-btn move-up-btn" type="button" aria-label="상품 위로 이동" title="위로 이동">▲</button>
+        <button class="move-item-btn move-down-btn" type="button" aria-label="상품 아래로 이동" title="아래로 이동">▼</button>
+      </div>
       <div class="col name-col">
         <input type="text" placeholder="상품명" value="${escapeAttr(item.name)}" class="item-input">
       </div>
@@ -217,8 +260,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const nameInput = row.querySelector('.item-input');
     const priceInput = row.querySelector('.price-input');
     const countInput = row.querySelector('.count-input');
+    const moveUpBtn = row.querySelector('.move-up-btn');
+    const moveDownBtn = row.querySelector('.move-down-btn');
     const deleteBtn = row.querySelector('.delete-item-btn');
     updatePurchasedState(row, item);
+
+    moveUpBtn.addEventListener('click', () => moveItem(item, -1));
+    moveDownBtn.addEventListener('click', () => moveItem(item, 1));
 
     nameInput.addEventListener('input', (e) => {
       item.name = e.target.value;

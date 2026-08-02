@@ -1,4 +1,4 @@
-const CACHE_NAME = 'market-cal-v16';
+const CACHE_NAME = 'market-cal-v17';
 const ASSETS = [
   './',
   './index.html',

@@ -505,7 +505,7 @@ body {
 
 .item-column-header {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(72px, 2fr) minmax(52px, 1fr) minmax(72px, 2fr) 40px;
+  grid-template-columns: 30px minmax(0, 3fr) minmax(72px, 2fr) minmax(52px, 1fr) minmax(72px, 2fr) 40px;
   gap: 0.5rem;
   align-items: center;
   padding: 0.75rem 1rem 0;
@@ -564,7 +564,7 @@ body {
 
 .item-row {
   display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(72px, 2fr) minmax(52px, 1fr) minmax(72px, 2fr) 40px;
+  grid-template-columns: 30px minmax(0, 3fr) minmax(72px, 2fr) minmax(52px, 1fr) minmax(72px, 2fr) 40px;
   gap: 0.5rem;
   margin-bottom: 0.75rem;
   animation: slideIn 0.2s ease-out;
@@ -601,6 +601,40 @@ body {
 .name-col { flex: 3; }
 .price-col { flex: 2; }
 .count-col { flex: 1; }
+.move-col {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.move-item-btn {
+  width: 30px;
+  min-height: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: 0.35rem;
+  background: #F3F4F6;
+  color: #4B5563;
+  cursor: pointer;
+  font-size: 0.65rem;
+  line-height: 1;
+}
+
+.move-item-btn:hover:not(:disabled) {
+  border-color: #A5B4FC;
+  background: #EEF2FF;
+  color: var(--primary-color);
+}
+
+.move-item-btn:focus-visible {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.16);
+}
+
+.move-item-btn:disabled {
+  cursor: default;
+  opacity: 0.28;
+}
+
 .total-col {
   flex: 2;
   text-align: right;
@@ -709,7 +743,7 @@ body {
   }
 
   .item-column-header {
-    grid-template-columns: minmax(0, 1.7fr) minmax(58px, 1fr) minmax(42px, 0.7fr) minmax(58px, 1fr) 34px;
+    grid-template-columns: 26px minmax(0, 1.7fr) minmax(58px, 1fr) minmax(42px, 0.7fr) minmax(58px, 1fr) 34px;
     gap: 0.25rem;
     padding: 0.625rem 0.75rem 0;
     font-size: 0.68rem;
@@ -720,8 +754,12 @@ body {
   }
 
   .item-row {
-    grid-template-columns: minmax(0, 1.7fr) minmax(58px, 1fr) minmax(42px, 0.7fr) minmax(58px, 1fr) 34px;
+    grid-template-columns: 26px minmax(0, 1.7fr) minmax(58px, 1fr) minmax(42px, 0.7fr) minmax(58px, 1fr) 34px;
     gap: 0.25rem;
+  }
+
+  .move-item-btn {
+    width: 26px;
   }
 
   .total-col {
