@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const totalCountEl = document.querySelector('.count-value');
   const totalPriceEl = document.querySelector('.price-value');
   const clearBtn = document.querySelector('.clear-btn');
+  const priceClearBtn = document.querySelector('.price-clear-btn');
   const cameraBtn = document.querySelector('.camera-btn');
   const settingsBtn = document.querySelector('.settings-btn');
   const photoInput = document.querySelector('.photo-input');
@@ -488,26 +489,78 @@ document.addEventListener('DOMContentLoaded', () => {
   sortHeaderButtons.forEach((button) => {
     let pressTimer = null;
     let longPressTriggered = false;
+    let touchStartPoint = null;
+    let touchMoved = false;
+    let suppressNextClick = false;
 
-    button.addEventListener('pointerdown', (event) => {
-      if (event.button !== 0) return;
+    function cancelPressTimer() {
+      if (pressTimer !== null) window.clearTimeout(pressTimer);
+      pressTimer = null;
+    }
+
+    function startPressTimer() {
+      cancelPressTimer();
       longPressTriggered = false;
       pressTimer = window.setTimeout(() => {
         longPressTriggered = true;
         restoreCreationOrder();
       }, 600);
+    }
+
+    button.addEventListener('pointerdown', (event) => {
+      if (event.pointerType === 'touch' || event.button !== 0) return;
+      startPressTimer();
     });
 
     ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
-      button.addEventListener(eventName, () => {
-        if (pressTimer !== null) window.clearTimeout(pressTimer);
-        pressTimer = null;
-      });
+      button.addEventListener(eventName, cancelPressTimer);
+    });
+
+    button.addEventListener('touchstart', (event) => {
+      const touch = event.touches[0];
+      if (!touch) return;
+      touchStartPoint = { x: touch.clientX, y: touch.clientY };
+      touchMoved = false;
+      startPressTimer();
+    }, { passive: true });
+
+    button.addEventListener('touchmove', (event) => {
+      const touch = event.touches[0];
+      if (!touch || !touchStartPoint) return;
+      const movedX = Math.abs(touch.clientX - touchStartPoint.x);
+      const movedY = Math.abs(touch.clientY - touchStartPoint.y);
+      if (movedX > 10 || movedY > 10) {
+        touchMoved = true;
+        cancelPressTimer();
+      }
+    }, { passive: true });
+
+    button.addEventListener('touchend', (event) => {
+      cancelPressTimer();
+      if (!touchMoved) {
+        event.preventDefault();
+        suppressNextClick = true;
+        if (!longPressTriggered) sortByHeader(button.dataset.sortKey);
+        longPressTriggered = false;
+        window.setTimeout(() => {
+          suppressNextClick = false;
+        }, 500);
+      }
+      touchStartPoint = null;
+      touchMoved = false;
+      longPressTriggered = false;
+    });
+
+    button.addEventListener('touchcancel', () => {
+      cancelPressTimer();
+      touchStartPoint = null;
+      touchMoved = false;
     });
 
     button.addEventListener('click', (event) => {
-      if (longPressTriggered) {
+      if (suppressNextClick || longPressTriggered) {
         event.preventDefault();
+        suppressNextClick = false;
         longPressTriggered = false;
         return;
       }
@@ -1081,6 +1134,20 @@ document.addEventListener('DOMContentLoaded', () => {
       setElementHidden(scanPanel, true);
       currentPhotoFile = null;
       areaSelectBtn.hidden = true;
+    }
+  });
+
+  priceClearBtn.addEventListener('click', () => {
+    const hasEnteredPrice = items.some(item => hasValue(item.price));
+    if (!hasEnteredPrice) return;
+
+    if (window.confirm('모든 상품의 단가만 삭제하시겠습니까? 상품명과 수량은 유지됩니다.')) {
+      items.forEach((item) => {
+        item.price = '';
+      });
+      clearSortState();
+      saveToLocalStorage();
+      renderAll();
     }
   });
 
