@@ -512,6 +512,64 @@ body {
   font-weight: 700;
 }
 
+.sort-header-btn {
+  width: 100%;
+  min-width: 0;
+  min-height: 2rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  padding: 0.3rem 0.1rem;
+  touch-action: manipulation;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.sort-header-btn::after {
+  display: inline-block;
+  width: 0.8em;
+  margin-left: 0.15rem;
+  color: var(--primary-color);
+  content: '';
+}
+
+.sort-header-btn[data-direction="asc"]::after {
+  content: '↑';
+}
+
+.sort-header-btn[data-direction="desc"]::after {
+  content: '↓';
+}
+
+.sort-header-btn:hover,
+.sort-header-btn[aria-pressed="true"] {
+  background: #EEF2FF;
+  color: var(--primary-color);
+}
+
+.sort-header-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.2);
+}
+
+.purchase-sort-btn {
+  position: relative;
+  font-size: 0.58rem;
+  letter-spacing: -0.08em;
+  padding-right: 0.55rem;
+}
+
+.purchase-sort-btn::after {
+  position: absolute;
+  right: 0;
+  width: 0.7em;
+  margin-left: 0;
+}
+
 .total-row {
   display: flex;
   background-color: #F9FAFB;
@@ -571,21 +629,21 @@ body {
   transition: background-color 0.2s, box-shadow 0.2s;
 }
 
-[data-purchased-style="green"] .item-row.has-price {
+[data-purchased-style="green"] .item-row.is-purchased {
   background-color: #E9F8E7;
   box-shadow: 0 0 0 0.35rem #E9F8E7;
 }
 
-[data-purchased-style="green"] .item-row.has-price .item-input,
-[data-purchased-style="green"] .item-row.has-price .price-input,
-[data-purchased-style="green"] .item-row.has-price .count-input {
+[data-purchased-style="green"] .item-row.is-purchased .item-input,
+[data-purchased-style="green"] .item-row.is-purchased .price-input,
+[data-purchased-style="green"] .item-row.is-purchased .count-input {
   background-color: #F4FCF2;
 }
 
-[data-purchased-style="strikethrough"] .item-row.has-price .item-input,
-[data-purchased-style="strikethrough"] .item-row.has-price .price-input,
-[data-purchased-style="strikethrough"] .item-row.has-price .count-input,
-[data-purchased-style="strikethrough"] .item-row.has-price .item-total {
+[data-purchased-style="strikethrough"] .item-row.is-purchased .item-input,
+[data-purchased-style="strikethrough"] .item-row.is-purchased .price-input,
+[data-purchased-style="strikethrough"] .item-row.is-purchased .count-input,
+[data-purchased-style="strikethrough"] .item-row.is-purchased .item-total {
   color: var(--text-light);
   text-decoration: line-through;
   text-decoration-thickness: 2px;

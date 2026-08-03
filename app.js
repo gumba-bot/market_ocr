@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fontScaleValue = document.querySelector('.font-scale-value');
   const fontResetBtn = document.querySelector('.font-reset-btn');
   const purchasedStyleOptions = document.querySelectorAll('input[name="purchased-style"]');
+  const sortHeaderButtons = document.querySelectorAll('.sort-header-btn');
 
   let items = [];
   let currentPreviewUrl = '';
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let regionMode = 'name';
   let regionDraftStart = null;
   let regionSelection = { name: null, price: null };
+  let sortState = { key: '', direction: '' };
   const defaultRegionHelpText = regionHelp.textContent;
   const defaultRegionRunText = regionRunBtn.textContent;
   const fontScaleStorageKey = 'market_cal_font_scale';
@@ -121,8 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function createItem(data = {}) {
+    const createdAt = Date.now();
     return {
-      id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+      id: `${createdAt}-${Math.random().toString(36).slice(2)}`,
+      createdAt,
       name: '',
       price: '',
       count: 1,
@@ -174,8 +178,16 @@ document.addEventListener('DOMContentLoaded', () => {
     row.querySelector('.item-total').textContent = itemTotal > 0 ? itemTotal.toLocaleString('ko-KR') : '';
   }
 
+  function hasValue(value) {
+    return value !== undefined && value !== null && String(value).trim() !== '';
+  }
+
+  function isPurchasedItem(item) {
+    return hasValue(item.name) && hasValue(item.price) && hasValue(item.count);
+  }
+
   function updatePurchasedState(row, item) {
-    row.classList.toggle('has-price', item.price !== '');
+    row.classList.toggle('is-purchased', isPurchasedItem(item));
   }
 
   function isPopulatedItem(item) {
@@ -206,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (currentIndex < 0 || !isPopulatedItem(item) || targetIndex < 0) return;
 
     [items[currentIndex], items[targetIndex]] = [items[targetIndex], items[currentIndex]];
+    clearSortState();
     saveToLocalStorage();
     renderAll();
 
@@ -214,6 +227,105 @@ document.addEventListener('DOMContentLoaded', () => {
     const preferredButton = movedRow.querySelector(direction < 0 ? '.move-up-btn' : '.move-down-btn');
     const fallbackButton = movedRow.querySelector(direction < 0 ? '.move-down-btn' : '.move-up-btn');
     (preferredButton.disabled ? fallbackButton : preferredButton).focus();
+  }
+
+  function updateSortHeaders() {
+    sortHeaderButtons.forEach((button) => {
+      const isActive = button.dataset.sortKey === sortState.key;
+      const direction = isActive ? sortState.direction : '';
+      const label = button.dataset.sortLabel;
+      button.dataset.direction = direction;
+      button.setAttribute('aria-pressed', String(isActive));
+      button.setAttribute(
+        'aria-label',
+        isActive
+          ? `${label} ${direction === 'asc' ? '오름차순' : '내림차순'} 정렬 중. 길게 누르면 기본 정렬`
+          : `${label} 오름차순 정렬. 길게 누르면 기본 정렬`,
+      );
+      button.title = isActive
+        ? `${direction === 'asc' ? '오름차순' : '내림차순'} 정렬 중 · 길게 눌러 기본 정렬`
+        : '눌러서 오름차순 정렬 · 길게 눌러 기본 정렬';
+    });
+  }
+
+  function clearSortState() {
+    sortState = { key: '', direction: '' };
+    updateSortHeaders();
+  }
+
+  function getSortValue(item, key) {
+    if (key === 'name') return hasValue(item.name) ? String(item.name).trim() : null;
+    if (key === 'price') return hasValue(item.price) ? parseNumber(item.price) : null;
+    if (key === 'count') return hasValue(item.count) ? parseInt(item.count, 10) : null;
+    if (key === 'total') {
+      if (!hasValue(item.price) || !hasValue(item.count)) return null;
+      return parseNumber(item.price) * parseInt(item.count, 10);
+    }
+    if (key === 'purchased') return isPurchasedItem(item) ? 1 : 0;
+    return null;
+  }
+
+  function applySort() {
+    const { key, direction } = sortState;
+    if (!key) return;
+
+    const collator = new Intl.Collator('ko', { numeric: true, sensitivity: 'base' });
+    const populatedItems = items
+      .map((item, originalIndex) => ({ item, originalIndex }))
+      .filter(({ item }) => isPopulatedItem(item));
+    const emptyItems = items.filter(item => !isPopulatedItem(item));
+
+    populatedItems.sort((left, right) => {
+      const leftValue = getSortValue(left.item, key);
+      const rightValue = getSortValue(right.item, key);
+      const leftMissing = leftValue === null || leftValue === '' || Number.isNaN(leftValue);
+      const rightMissing = rightValue === null || rightValue === '' || Number.isNaN(rightValue);
+
+      if (leftMissing !== rightMissing) return leftMissing ? 1 : -1;
+      if (leftMissing && rightMissing) return left.originalIndex - right.originalIndex;
+
+      const comparison = key === 'name'
+        ? collator.compare(leftValue, rightValue)
+        : leftValue - rightValue;
+      return comparison === 0
+        ? left.originalIndex - right.originalIndex
+        : comparison * (direction === 'asc' ? 1 : -1);
+    });
+
+    items = [...populatedItems.map(({ item }) => item), ...emptyItems];
+    saveToLocalStorage();
+    renderAll();
+  }
+
+  function getCreationTime(item, fallbackIndex) {
+    const storedTime = Number(item.createdAt);
+    if (Number.isFinite(storedTime) && storedTime > 0) return storedTime;
+
+    const idTime = parseInt(String(item.id || '').split('-')[0], 10);
+    return Number.isFinite(idTime) && idTime > 0 ? idTime : fallbackIndex;
+  }
+
+  function restoreCreationOrder() {
+    items = items
+      .map((item, originalIndex) => ({ item, originalIndex }))
+      .sort((left, right) => {
+        const timeDifference = getCreationTime(left.item, left.originalIndex)
+          - getCreationTime(right.item, right.originalIndex);
+        return timeDifference || left.originalIndex - right.originalIndex;
+      })
+      .map(({ item }) => item);
+    clearSortState();
+    saveToLocalStorage();
+    renderAll();
+  }
+
+  function sortByHeader(key) {
+    sortState = {
+      key,
+      direction: sortState.key === key && sortState.direction === 'asc' ? 'desc' : 'asc',
+    };
+    updateSortHeaders();
+    applySort();
   }
 
   function checkAutoAdd() {
@@ -270,6 +382,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     nameInput.addEventListener('input', (e) => {
       item.name = e.target.value;
+      updatePurchasedState(row, item);
       saveToLocalStorage();
       updateTotals();
       checkAutoAdd();
@@ -302,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
       item.count = isNaN(num) ? '' : num;
 
       updateRowTotal(row, item);
+      updatePurchasedState(row, item);
       saveToLocalStorage();
       updateTotals();
     });
@@ -329,6 +443,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       saveToLocalStorage();
+      clearSortState();
       updateTotals();
       checkAutoAdd();
     });
@@ -369,6 +484,42 @@ document.addEventListener('DOMContentLoaded', () => {
       scanResult.innerHTML = '';
     }
   }
+
+  sortHeaderButtons.forEach((button) => {
+    let pressTimer = null;
+    let longPressTriggered = false;
+
+    button.addEventListener('pointerdown', (event) => {
+      if (event.button !== 0) return;
+      longPressTriggered = false;
+      pressTimer = window.setTimeout(() => {
+        longPressTriggered = true;
+        restoreCreationOrder();
+      }, 600);
+    });
+
+    ['pointerup', 'pointercancel', 'pointerleave'].forEach((eventName) => {
+      button.addEventListener(eventName, () => {
+        if (pressTimer !== null) window.clearTimeout(pressTimer);
+        pressTimer = null;
+      });
+    });
+
+    button.addEventListener('click', (event) => {
+      if (longPressTriggered) {
+        event.preventDefault();
+        longPressTriggered = false;
+        return;
+      }
+      sortByHeader(button.dataset.sortKey);
+    });
+
+    button.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+    });
+  });
+
+  updateSortHeaders();
 
   function showPreview(file) {
     if (currentPreviewUrl) {
@@ -829,6 +980,7 @@ document.addEventListener('DOMContentLoaded', () => {
     item.name = parsed.name || '';
     item.price = parsed.price || '';
     item.count = 1;
+    clearSortState();
     saveToLocalStorage();
     renderAll();
     focusItem(item);
@@ -923,6 +1075,7 @@ document.addEventListener('DOMContentLoaded', () => {
   clearBtn.addEventListener('click', () => {
     if (window.confirm('모든 상품을 삭제하시겠습니까?')) {
       items = [createItem()];
+      clearSortState();
       saveToLocalStorage();
       renderAll();
       setElementHidden(scanPanel, true);
