@@ -87,6 +87,11 @@ body {
   gap: 0.5rem;
 }
 
+.clear-buttons button {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
 .header-buttons {
   display: flex;
   flex: 0 0 auto;

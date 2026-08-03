@@ -1,9 +1,9 @@
-const CACHE_NAME = 'market-cal-v25';
+const CACHE_NAME = 'market-cal-v26';
 const ASSETS = [
   './',
   './index.html',
-  './style.css',
-  './app.js',
+  './style.css?v=26',
+  './app.js?v=26',
   './favicon.png',
   './manifest.json'
 ];
